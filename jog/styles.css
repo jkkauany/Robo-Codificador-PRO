@@ -53,7 +53,7 @@ body {
 
 .editor-header span { font-weight: 500; }
 
-.code-area { 
+.codigo-area { 
   background:#1e1e2e; 
   padding:20px; 
   height:420px; 
@@ -196,4 +196,23 @@ button {
 }
 .btn-fechar:hover {
   background:#00a080;
+}
+
+.codigo-area {
+  width: 100%;
+  height: 200px;
+  background: #0f172a;
+  color: #e2e8f0;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: monospace;
+  font-size: 14px;
+  outline: none;
+  resize: none;
+  margin-bottom: 12px;
+}
+
+.codigo-area::placeholder {
+  color: #64748b;
 }

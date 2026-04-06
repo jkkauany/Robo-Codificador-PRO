@@ -233,7 +233,7 @@ async function executarCodigo() {
   isRunning = true;
   document.getElementById('status').innerHTML = '🚀 Executando código...';
 
-  const lines = document.getElementById('code').innerText.trim().split('\n');
+  const lines = document.getElementById('codigo').innerText.trim().split('\n');
   for (let line of lines) {
     const cmd = line.trim();
     if (cmd === '') continue;
@@ -266,7 +266,7 @@ function resetNivel() {
     { x: 3, y: 7, collected: false }
   ];
   
-  document.getElementById('code').innerText = 'moverEsquerda()\nmoverEsquerda()\nmoverCima()\nmoverCima()';
+  document.getElementById('codigo').innerText = 'moverEsquerda()\nmoverEsquerda()\nmoverCima()\nmoverCima()';
   document.getElementById('status').innerHTML = '🔄 Nível reiniciado!';
   draw();
 }
