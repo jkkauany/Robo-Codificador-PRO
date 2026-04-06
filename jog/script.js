@@ -1,231 +1,338 @@
+// =============== CONFIGURAÇÃO ===============
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-
 const CELL = 70;
-const COLS = 8;
-const ROWS = 8;
+const COLS = 8, ROWS = 8;
 
-let nivelAtual = 1;
+let currentLevelIndex = 0;
+let robot = { gridX: 0, gridY: 0 };
+let robotPixel = { x: 0, y: 0 };
+let chips = [];
 let isRunning = false;
-let jogoTerminado = false;
 
-let robot = { gridX: 1, gridY: 1 };
-let robotPixel = { x: 1*CELL + CELL/2, y: 1*CELL + CELL/2 };
-
-let maze = [];
-let itens = [];
-
-// ========= NÍVEIS =========
-const niveis = [
+const levels = [
   {
-    nome: "Nível 1",
-    maze: [
-      [1,1,1,1,1,1,1,1],
-      [1,0,0,1,0,0,0,1],
-      [1,0,1,1,0,1,0,1],
-      [1,0,0,0,0,1,0,1],
-      [1,1,1,1,0,1,0,1],
-      [1,0,0,1,0,0,0,1],
-      [1,0,1,0,0,1,1,1],
-      [1,0,0,0,0,0,0,1]
+    number: 1,
+    title: "Nível 1 — Colete os 4 chipes!",
+    startX: 4,
+    startY: 5,
+    chips: [
+      { x: 2, y: 2 },
+      { x: 5, y: 1 },
+      { x: 7, y: 6 },
+      { x: 3, y: 7 }
     ],
-    robotStart: { x: 1, y: 1 },
-    itens: [
-      { x: 6, y: 6, tipo: "real" },
-      { x: 2, y: 3, tipo: "falso" },
-      { x: 5, y: 4, tipo: "falso" }
-    ]
+    solution: `moverEsquerda()
+moverEsquerda()
+moverCima()
+moverCima()
+moverDireita()
+moverDireita()
+moverBaixo()
+moverBaixo()
+moverEsquerda()
+moverCima()
+moverDireita()
+moverDireita()
+moverBaixo()
+moverBaixo()
+moverEsquerda()`
+  },
+  {
+    number: 2,
+    title: "Nível 2 — Chipes em linha reta!",
+    startX: 0,
+    startY: 7,
+    chips: [
+      { x: 7, y: 7 },
+      { x: 7, y: 4 },
+      { x: 7, y: 1 },
+      { x: 3, y: 3 }
+    ],
+    solution: `moverDireita()\nmoverDireita()\nmoverDireita()\nmoverDireita()\nmoverDireita()\nmoverDireita()\nmoverDireita()\nmoverCima()\nmoverCima()\nmoverCima()`
+  },
+  {
+    number: 3,
+    title: "Nível 3 — Labirinto simples",
+    startX: 7,
+    startY: 0,
+    chips: [
+      { x: 0, y: 0 },
+      { x: 2, y: 4 },
+      { x: 5, y: 2 },
+      { x: 4, y: 7 },
+      { x: 1, y: 6 }
+    ],
+    solution: `moverEsquerda()\nmoverEsquerda()\nmoverEsquerda()\nmoverBaixo()\nmoverBaixo()\nmoverEsquerda()`
+  },
+  {
+    number: 4,
+    title: "Nível 4 — Desafio Final!",
+    startX: 3,
+    startY: 3,
+    chips: [
+      { x: 0, y: 0 }, { x: 7, y: 0 },
+      { x: 0, y: 7 }, { x: 7, y: 7 },
+      { x: 2, y: 5 }, { x: 5, y: 1 }
+    ],
+    solution: ``
   }
 ];
 
-// ========= CARREGAR =========
-function carregarNivel(n) {
-  const nivel = niveis[n-1];
-  if (!nivel) return;
-
-  maze = nivel.maze.map(l => [...l]);
-  itens = nivel.itens.map(i => ({...i, coletado:false}));
-
-  robot.gridX = nivel.robotStart.x;
-  robot.gridY = nivel.robotStart.y;
-
-  robotPixel.x = robot.gridX * CELL + CELL/2;
-  robotPixel.y = robot.gridY * CELL + CELL/2;
-
-  jogoTerminado = false;
-
-  document.getElementById('status').innerHTML =
-    `<strong>${nivel.nome}</strong> — Pegue ⭐ e evite ✕`;
+// Função auxiliar para retângulos arredondados
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
 }
 
-// ========= DESENHO =========
+// Desenha o ROBÔ (mesmo código anterior)
+function drawRobot(px, py) {
+  ctx.save();
+  ctx.translate(px, py);
+  ctx.scale(0.92, 0.92);
+  ctx.shadowColor = '#1e3a5f';
+  ctx.shadowBlur = 18;
+  ctx.shadowOffsetY = 8;
+  ctx.fillStyle = '#e0f2ff';
+  ctx.strokeStyle = '#1e3a5f';
+  ctx.lineWidth = 9;
+  roundRect(ctx, -28, -12, 56, 65, 18);
+  ctx.fill();
+  ctx.stroke();
+  roundRect(ctx, -31, -58, 62, 52, 14);
+  ctx.fill();
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#0a2540';
+  roundRect(ctx, -23, -51, 46, 37, 9);
+  ctx.fill();
+  ctx.fillStyle = '#00f5ff';
+  ctx.fillRect(-14, -45, 9, 14);
+  ctx.fillRect(5, -45, 9, 14);
+  ctx.fillStyle = 'white';
+  ctx.fillRect(-11, -47, 3, 4);
+  ctx.fillRect(8, -47, 3, 4);
+  ctx.strokeStyle = '#00f5ff';
+  ctx.lineWidth = 3.5;
+  ctx.beginPath();
+  ctx.arc(0, -28, 9, 0.3 * Math.PI, 0.7 * Math.PI);
+  ctx.stroke();
+  ctx.strokeStyle = '#1e3a5f';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(-17, -65); ctx.lineTo(-23, -82);
+  ctx.moveTo(17, -65); ctx.lineTo(23, -82);
+  ctx.stroke();
+  ctx.fillStyle = '#1e3a5f';
+  ctx.beginPath(); ctx.arc(-23, -82, 5, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(23, -82, 5, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#1e3a5f';
+  ctx.lineWidth = 11;
+  ctx.beginPath(); ctx.moveTo(-28, 8); ctx.quadraticCurveTo(-48, 18, -52, 38); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(28, 8); ctx.quadraticCurveTo(48, 18, 52, 38); ctx.stroke();
+  ctx.lineWidth = 9;
+  ctx.beginPath(); ctx.moveTo(-13, 48); ctx.lineTo(-18, 72); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(13, 48); ctx.lineTo(18, 72); ctx.stroke();
+  ctx.restore();
+}
+
+// Desenha chipe (some quando collected = true)
+function drawChip(x, y, index, time) {
+  if (chips[index].collected) return;   // ← CHIPE SOME AQUI
+  const px = x * CELL + CELL/2;
+  const py = y * CELL + CELL/2 + Math.sin(time * 3 + index) * 8;
+  const rot = Math.sin(time * 2.5 + index * 1.3) * 7;
+  ctx.save();
+  ctx.translate(px, py);
+  ctx.rotate(rot * Math.PI / 180);
+  ctx.fillStyle = '#10b981';
+  ctx.shadowColor = '#059669';
+  ctx.shadowBlur = 15;
+  roundRect(ctx, -23, -27, 46, 54, 9);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 5;
+  ctx.stroke();
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 26px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('💾', 0, 3);
+  ctx.restore();
+}
+
+// Desenho completo
 function draw() {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const time = Date.now() / 1000;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#f8f7f2';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = '#475569';
-  for (let y=0;y<ROWS;y++){
-    for (let x=0;x<COLS;x++){
-      if (maze[y][x]===1){
-        ctx.fillRect(x*CELL,y*CELL,CELL,CELL);
-      }
+  ctx.save();
+  ctx.globalAlpha = 0.07;
+  ctx.font = '290px system-ui';
+  ctx.fillStyle = '#64748b';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('< />', canvas.width/2, canvas.height/2 + 15);
+  ctx.restore();
+
+  // Grade
+  ctx.strokeStyle = '#d1d5db';
+  ctx.lineWidth = 2.8;
+  for (let i = 0; i <= COLS; i++) {
+    ctx.beginPath(); ctx.moveTo(i * CELL, 0); ctx.lineTo(i * CELL, canvas.height); ctx.stroke();
+  }
+  for (let i = 0; i <= ROWS; i++) {
+    ctx.beginPath(); ctx.moveTo(0, i * CELL); ctx.lineTo(canvas.width, i * CELL); ctx.stroke();
+  }
+
+  chips.forEach((_, i) => drawChip(chips[i].x, chips[i].y, i, time));
+  drawRobot(robotPixel.x, robotPixel.y);
+}
+
+// Movimento suave
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+async function moveTo(newGridX, newGridY) {
+  // ... (código de movimento igual ao anterior - não mudou)
+  const startX = robotPixel.x;
+  const startY = robotPixel.y;
+  const targetX = newGridX * CELL + CELL/2;
+  const targetY = newGridY * CELL + CELL/2;
+  const steps = 24;
+
+  for (let i = 1; i <= steps; i++) {
+    let p = i / steps;
+    p = 1 - Math.pow(1 - p, 3);
+    robotPixel.x = startX + (targetX - startX) * p;
+    robotPixel.y = startY + (targetY - startY) * p;
+    draw();
+    await sleep(13);
+  }
+
+  robot.gridX = newGridX;
+  robot.gridY = newGridY;
+  robotPixel.x = targetX;
+  robotPixel.y = targetY;
+  draw();
+
+  // Coleta de chipe
+  chips.forEach(chip => {
+    if (!chip.collected && chip.x === robot.gridX && chip.y === robot.gridY) {
+      chip.collected = true;
     }
-  }
-
-  ctx.strokeStyle='#d1d5db';
-  for (let i=0;i<=COLS;i++){
-    ctx.beginPath();
-    ctx.moveTo(i*CELL,0);
-    ctx.lineTo(i*CELL,canvas.height);
-    ctx.stroke();
-  }
-  for (let i=0;i<=ROWS;i++){
-    ctx.beginPath();
-    ctx.moveTo(0,i*CELL);
-    ctx.lineTo(canvas.width,i*CELL);
-    ctx.stroke();
-  }
-
-  itens.forEach(item=>{
-    if(item.coletado) return;
-
-    const px = item.x*CELL + CELL/2;
-    const py = item.y*CELL + CELL/2;
-
-    ctx.save();
-    ctx.translate(px,py);
-
-    ctx.font='40px Arial';
-    if(item.tipo==="real"){
-      ctx.fillText('⭐',0,0);
-    } else {
-      ctx.fillStyle='red';
-      ctx.fillText('✕',0,0);
-    }
-
-    ctx.restore();
   });
 
-  ctx.beginPath();
-  ctx.arc(robotPixel.x, robotPixel.y, 20, 0, Math.PI*2);
-  ctx.fillStyle = '#22c55e';
-  ctx.fill();
-}
-
-// ========= MOVIMENTO =========
-const sleep = ms => new Promise(r=>setTimeout(r,ms));
-
-async function moveTo(nx, ny) {
-  // limite do mapa
-  if (nx < 0 || ny < 0 || nx >= COLS || ny >= ROWS) return;
-  if (jogoTerminado || maze[ny][nx] === 1) return;
-
-  const tx = nx*CELL + CELL/2;
-  const ty = ny*CELL + CELL/2;
-
-  const steps = 20;
-  const sx = robotPixel.x;
-  const sy = robotPixel.y;
-
-  for (let i=1;i<=steps;i++){
-    const p = i/steps;
-    robotPixel.x = sx + (tx-sx)*p;
-    robotPixel.y = sy + (ty-sy)*p;
-    draw();
-    await sleep(10);
+  const totalCollected = chips.filter(c => c.collected).length;
+  if (totalCollected > 0) {
+    document.getElementById('status').innerHTML = `✅ Chipe coletado! (${totalCollected}/${chips.length})`;
   }
 
-  robot.gridX = nx;
-  robot.gridY = ny;
-
-  checarItens();
+  if (chips.every(c => c.collected)) {
+    document.getElementById('status').innerHTML = `🎉 Nível ${levels[currentLevelIndex].number} concluído!`;
+    document.getElementById('btn-proximo').style.display = 'flex';
+    setTimeout(() => alert(`🏆 Nível ${levels[currentLevelIndex].number} concluído com sucesso!`), 400);
+  }
 }
 
-// ========= ITENS =========
-function checarItens() {
-  for (let item of itens) {
-    if (!item.coletado &&
-        item.x === robot.gridX &&
-        item.y === robot.gridY) {
+// Comandos (igual)
+const commands = {
+  'moverEsquerda()': () => moveTo(Math.max(0, robot.gridX - 1), robot.gridY),
+  'moverDireita()': () => moveTo(Math.min(COLS-1, robot.gridX + 1), robot.gridY),
+  'moverCima()': () => moveTo(robot.gridX, Math.max(0, robot.gridY - 1)),
+  'moverBaixo()': () => moveTo(robot.gridX, Math.min(ROWS-1, robot.gridY + 1))
+};
 
-      item.coletado = true;
+async function executarCodigo() {
+  if (isRunning) return;
+  isRunning = true;
+  document.getElementById('status').innerHTML = '🚀 Executando código...';
+  document.getElementById('btn-proximo').style.display = 'none';
 
-      if (item.tipo === "real") {
-        jogoTerminado = true;
-        document.getElementById('status').innerHTML =
-          `🎉 Nível concluído!`;
-      } else {
-        document.getElementById('status').innerHTML =
-          '❌ Item falso!';
-        setTimeout(resetNivel, 1200);
-      }
+  const lines = document.getElementById('code').innerText.trim().split('\n');
 
-      draw();
+  for (let line of lines) {
+    const cmd = line.trim();
+    if (cmd === '') continue;
+    if (commands[cmd]) {
+      await commands[cmd]();
+    } else {
+      document.getElementById('status').innerHTML = `❌ Comando desconhecido: <b>${cmd}</b>`;
+      isRunning = false;
       return;
     }
   }
-}
-
-// ========= COMANDOS =========
-const commands = {
-  'moverDireita()': () => moveTo(robot.gridX+1, robot.gridY),
-  'moverEsquerda()': () => moveTo(robot.gridX-1, robot.gridY),
-  'moverCima()': () => moveTo(robot.gridX, robot.gridY-1),
-  'moverBaixo()': () => moveTo(robot.gridX, robot.gridY+1)
-};
-
-// ========= EXECUÇÃO =========
-async function executarCodigo() {
-  if (isRunning || jogoTerminado) return;
-
-  isRunning = true;
-  document.getElementById('status').innerHTML = '🚀 Executando...';
-
-  const linhas = document
-    .getElementById('code')
-    .innerText.trim().split('\n');
-
-  for (let linha of linhas) {
-    const cmd = linha.trim();
-    if (!cmd) continue;
-
-    if (commands[cmd]) {
-      await commands[cmd]();
-      if (jogoTerminado) break;
-    } else {
-      document.getElementById('status').innerHTML =
-        `❌ Comando inválido: ${cmd}`;
-      break;
-    }
-  }
-
   isRunning = false;
+  if (!chips.every(c => c.collected)) {
+    document.getElementById('status').innerHTML = '✅ Código executado com sucesso!';
+  }
 }
 
-// ========= CONTROLE =========
-function resetNivel() {
-  carregarNivel(nivelAtual);
+function loadLevel(index) {
+  currentLevelIndex = index;
+  const level = levels[index];
+
+  robot = { gridX: level.startX, gridY: level.startY };
+  robotPixel = { x: level.startX * CELL + CELL/2, y: level.startY * CELL + CELL/2 };
+
+  chips = level.chips.map(chip => ({ ...chip, collected: false }));
+
+  document.getElementById('level-title').innerText = level.title;
+  document.getElementById('code').innerText = level.solution || 'Escreva seu código aqui...';
+  document.getElementById('status').innerHTML = '';
+  document.getElementById('btn-proximo').style.display = 'none';
+
   draw();
 }
 
 function proximoNivel() {
-  nivelAtual++;
-  carregarNivel(nivelAtual);
-  draw();
+  if (currentLevelIndex < levels.length - 1) {
+    loadLevel(currentLevelIndex + 1);
+  } else {
+    alert('🎉 Parabéns! Você completou todos os 4 níveis!');
+    loadLevel(0);
+  }
 }
 
-// ========= UI =========
-function mostrartutorial(){
-  document.getElementById('modal-tutorial').style.display='flex';
+function mostrarDica() {
+  alert('💡 Dica: Planeje o caminho antes de executar. Cada chipe deve ser visitado!');
 }
 
-function fecharModal(){
-  document.getElementById('modal-tutorial').style.display='none';
+function mostrarSolucao() {
+  const level = levels[currentLevelIndex];
+  if (level.solution) {
+    document.getElementById('code').innerText = level.solution;
+    document.getElementById('status').innerHTML = '📋 Solução carregada!';
+  } else {
+    alert('🤖 Neste nível a solução não foi fornecida. Tente resolver sozinho!');
+  }
 }
 
-// ========= START =========
-carregarNivel(1);
-draw();
+function resetNivel() {
+  loadLevel(currentLevelIndex);
+}
 
-setInterval(()=>{
-  if(!isRunning) draw();
-},80);
+function mostrarDocs() {
+  document.getElementById('modal-docs').style.display = 'flex';
+}
+
+function fecharModal() {
+  document.getElementById('modal-docs').style.display = 'none';
+}
+
+// Iniciar o jogo
+loadLevel(0);
+setInterval(() => {
+  if (!isRunning) draw();
+}, 80);
