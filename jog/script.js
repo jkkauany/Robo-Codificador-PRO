@@ -15,7 +15,7 @@ let robotPixel = { x: 1*CELL + CELL/2, y: 1*CELL + CELL/2 };
 // ==================== NÍVEIS ====================
 const niveis = [
   {
-    nome: "Nível 1 - Laboratório Simples",
+    nome: "Nível 1 - Laboratório ",
     maze: [
       [1,1,1,1,1,1,1,1],
       [1,0,0,1,0,0,0,1],
