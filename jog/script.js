@@ -201,6 +201,22 @@ function checarItens() {
     if (!item.coletado && item.x === robot.gridX && item.y === robot.gridY) {
       item.coletado = true;
 
+<<<<<<< HEAD
+async function executarCodigo() {
+  if (isRunning) return;
+  isRunning = true;
+  document.getElementById('status').innerHTML = '🚀 Executando código...';
+
+  const lines = document.getElementById('codigo').innerText.trim().split('\n');
+  for (let line of lines) {
+    const cmd = line.trim();
+    if (cmd === '') continue;
+    if (commands[cmd]) {
+      await commands[cmd]();
+    } else {
+      document.getElementById('status').innerHTML = `❌ Comando desconhecido: <b>${cmd}</b>`;
+      isRunning = false;
+=======
       if (item.tipo === "real") {
         jogoTerminado = true;
         document.getElementById('status').innerHTML = `🎉 Nível ${nivelAtual} concluído!`;
@@ -218,6 +234,7 @@ function checarItens() {
         setTimeout(resetNivelAtual, 1400);
       }
       draw();
+>>>>>>> 3b250bfe3856995c476fba92bd8db3b9b789a5d8
       return;
     }
   }
@@ -243,7 +260,7 @@ function resetNivel() {
     { x: 3, y: 7, collected: false }
   ];
   
-  document.getElementById('code').innerText = 'moverEsquerda()\nmoverEsquerda()\nmoverCima()\nmoverCima()';
+  document.getElementById('codigo').innerText = 'moverEsquerda()\nmoverEsquerda()\nmoverCima()\nmoverCima()';
   document.getElementById('status').innerHTML = '🔄 Nível reiniciado!';
   draw();
 }

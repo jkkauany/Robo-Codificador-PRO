@@ -53,7 +53,7 @@ body {
 
 .editor-header span { font-weight: 500; }
 
-.code-area { 
+.codigo-area { 
   background:#1e1e2e; 
   padding:20px; 
   height:420px; 
@@ -184,7 +184,42 @@ button {
   background:#00a080;
 }
 
+<<<<<<< HEAD
+.btn-fechar {
+  width:100%; 
+  padding:14px; 
+  background:#00b894; 
+  color:white; 
+  border:none; 
+  border-radius:12px; 
+  font-size:16px; 
+  cursor:pointer;
+}
+.btn-fechar:hover {
+  background:#00a080;
+}
+
+.codigo-area {
+  width: 100%;
+  height: 200px;
+  background: #0f172a;
+  color: #e2e8f0;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: monospace;
+  font-size: 14px;
+  outline: none;
+  resize: none;
+  margin-bottom: 12px;
+}
+
+.codigo-area::placeholder {
+  color: #64748b;
+}
+=======
 
 
 
 
+>>>>>>> 3b250bfe3856995c476fba92bd8db3b9b789a5d8
