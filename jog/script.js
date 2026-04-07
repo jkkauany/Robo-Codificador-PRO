@@ -66,21 +66,27 @@ const levels = [
       { x: 7, y: 6 },
       { x: 3, y: 7 }
     ],
-    solution: `moverEsquerda()
-moverEsquerda()
-moverCima()
-moverCima()
-moverDireita()
-moverDireita()
+   solution: `
 moverBaixo()
 moverBaixo()
 moverEsquerda()
+moverEsquerda()
+moverCima()
+moverCima()
+moverCima()
+moverCima()
+moverCima()
 moverCima()
 moverDireita()
 moverDireita()
+moverDireita()
+moverDireita()
+moverDireita()
 moverBaixo()
 moverBaixo()
-moverEsquerda()`
+moverBaixo()
+moverBaixo()
+moverBaixo()`
   },
   {
     number: 2,
@@ -102,7 +108,16 @@ moverDireita()
 moverDireita()
 moverCima()
 moverCima()
-moverCima()`
+moverCima()
+moverCima()
+moverCima()
+moverCima()
+moverEsquerda()
+moverEsquerda()
+moverEsquerda()
+moverEsquerda()
+moverBaixo()
+moverBaixo()`
   },
   {
     number: 3,
@@ -119,25 +134,45 @@ moverCima()`
     solution: `moverEsquerda()
 moverEsquerda()
 moverEsquerda()
+moverEsquerda()
+moverEsquerda()
+moverEsquerda()
+moverEsquerda()
 moverBaixo()
 moverBaixo()
-moverEsquerda()`
+moverDireita()
+moverDireita()
+moverDireita()
+moverDireita()
+moverDireita()
+moverBaixo()
+moverBaixo()
+moverEsquerda()
+moverEsquerda()
+moverEsquerda()
+moverEsquerda()
+moverBaixo()
+moverBaixo()
+moverBaixo()
+moverDireita()
+moverDireita()
+moverDireita()`
   },
   {
-    number: 4,
-    title: "Nível 4 — Desafio Final!",
-    startX: 3,
-    startY: 3,
-    chips: [
-      { x: 0, y: 0 },
-      { x: 7, y: 0 },
-      { x: 0, y: 7 },
-      { x: 7, y: 7 },
-      { x: 2, y: 5 },
-      { x: 5, y: 1 }
-    ],
-    solution: ``
-  }
+  number: 4,
+  title: "Nível 4 — Desafio Final!",
+  startX: 3,
+  startY: 3,
+  chips: [
+    { x: 0, y: 0 },
+    { x: 7, y: 0 },
+    { x: 0, y: 7 },
+    { x: 7, y: 7 },
+    { x: 2, y: 5 },
+    { x: 5, y: 1 }
+  ],
+  solution: `Boa sorte meu consagrado... 🤖\n\nSegure na mão de Deus e vá na Fé!!`
+},
 ];
 
 // Função auxiliar para retângulos arredondados
@@ -388,10 +423,16 @@ function mostrarDica() {
 
 function mostrarSolucao() {
   const level = levels[currentLevelIndex];
-  if (level.solution && level.solution.trim() !== '') {
+  
+  if (currentLevelIndex === 3) {  // Nível 4 (índice 3)
+    document.getElementById('code').innerText = level.solution;
+    document.getElementById('status').innerHTML = '💡 Mensagem carregada!';
+  } 
+  else if (level.solution && level.solution.trim() !== '') {
     document.getElementById('code').innerText = level.solution;
     document.getElementById('status').innerHTML = '📋 Solução carregada!';
-  } else {
+  } 
+  else {
     alert('🤖 Neste nível a solução ainda não foi fornecida.');
   }
 }
