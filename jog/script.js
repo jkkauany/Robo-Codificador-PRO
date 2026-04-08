@@ -193,7 +193,7 @@ function roundRect(ctx, x, y, w, h, r) {
 function drawRobot(px, py) {
   ctx.save();
   ctx.translate(px, py);
-  ctx.scale(0.92, 0.92);
+  ctx.scale(0.60, 0.60);
   ctx.shadowColor = '#1e3a5f';
   ctx.shadowBlur = 18;
   ctx.shadowOffsetY = 8;
