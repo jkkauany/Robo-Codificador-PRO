@@ -65,9 +65,12 @@ body {
   border-bottom: 1px solid #3a3a4a;
 }
 
-/* ÁREA DE CÓDIGO - MAIOR */
+/* ÁREA DE CÓDIGO - AGORA MENOR E COM SCROLL */
 .code-area { 
-  flex: 1;
+  flex: none;
+  height: 340px;           /* ← altura fixa e compacta */
+  min-height: 280px;
+  max-height: 420px;
   background: var(--dark); 
   padding: 20px; 
   font-size: 14px; 
@@ -78,7 +81,8 @@ body {
   border: none;
   font-family: 'Roboto Mono', monospace;
   color: #c3d1ff;
-  min-height: 320px;
+  border-radius: 0 0 18px 18px;
+  box-shadow: inset 0 4px 10px rgba(0,0,0,0.3);
 }
 
 /* CONTROLES - AGORA ABAIXO DO EDITOR */
