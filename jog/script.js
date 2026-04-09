@@ -8,7 +8,10 @@ let currentLevelIndex = 0;
 let robot = { gridX: 0, gridY: 0 };
 let robotPixel = { x: 0, y: 0 };
 let chips = [];
+let corruptedChips = [];   // NOVO: chips vermelhos que resetam a fase
+let traps = [];            // NOVO: buracos e pisos quebrados que resetam a fase
 let isRunning = false;
+let shouldStopExecution = false; // NOVO: para parar a execução quando cair em obstáculo
 
 // ==================== PROGRESSO ==================== //
 let completedLevels = [];
@@ -53,7 +56,7 @@ function updateProgressBar() {
   }
 }
 
-// =============== NÍVEIS =============== //
+// =============== NÍVEIS (com obstáculos novos) =============== //
 const levels = [
   {
     number: 1,
@@ -66,7 +69,9 @@ const levels = [
       { x: 7, y: 6 },
       { x: 3, y: 7 }
     ],
-   solution: `
+    corruptedChips: [], // sem obstáculos
+    traps: [],
+    solution: `
 moverBaixo()
 moverBaixo()
 moverEsquerda()
@@ -90,7 +95,7 @@ moverBaixo()`
   },
   {
     number: 2,
-    title: "Nível 2 — Chipes em linha reta!",
+    title: "Nível 2 — Chipes em linha reta! ⚠️ Cuidado com os chips corrompidos",
     startX: 0,
     startY: 7,
     chips: [
@@ -99,6 +104,14 @@ moverBaixo()`
       { x: 7, y: 1 },
       { x: 3, y: 3 }
     ],
+    corruptedChips: [     // ← NOVO: chips vermelhos (resetam se coletados)
+      { x: 2, y: 6 },
+      { x: 4, y: 5 },
+      { x: 6, y: 3 },
+      { x: 1, y: 1 },
+      { x: 5, y: 0 }
+    ],
+    traps: [],
     solution: `moverDireita()
 moverDireita()
 moverDireita()
@@ -121,7 +134,7 @@ moverBaixo()`
   },
   {
     number: 3,
-    title: "Nível 3 — Labirinto simples",
+    title: "Nível 3 — Labirinto simples 🕳️ Evite os buracos e pisos quebrados!",
     startX: 7,
     startY: 0,
     chips: [
@@ -131,6 +144,18 @@ moverBaixo()`
       { x: 4, y: 7 },
       { x: 1, y: 6 }
     ],
+    corruptedChips: [],
+    traps: [              // ← NOVO: buracos/pisos quebrados (resetam se pisar)
+      { x: 3, y: 1 },
+      { x: 6, y: 4 },
+      { x: 4, y: 3 },
+      { x: 2, y: 3 },
+      { x: 0, y: 5 },
+      { x: 7, y: 3 },
+      { x: 5, y: 6 },
+      { x: 3, y: 6 },
+      { x: 1, y: 2 }
+    ],
     solution: `moverEsquerda()
 moverEsquerda()
 moverEsquerda()
@@ -139,9 +164,9 @@ moverEsquerda()
 moverEsquerda()
 moverEsquerda()
 moverBaixo()
+moverDireita()
+moverDireita()
 moverBaixo()
-moverDireita()
-moverDireita()
 moverDireita()
 moverDireita()
 moverDireita()
@@ -156,26 +181,43 @@ moverBaixo()
 moverBaixo()
 moverDireita()
 moverDireita()
-moverDireita()`
+moverDireita()
+`
   },
   {
-  number: 4,
-  title: "Nível 4 — Desafio Final!",
-  startX: 3,
-  startY: 3,
-  chips: [
-    { x: 0, y: 0 },
-    { x: 7, y: 0 },
-    { x: 0, y: 7 },
-    { x: 7, y: 7 },
-    { x: 2, y: 5 },
-    { x: 5, y: 1 }
-  ],
-  solution: `Boa sorte meu consagrado... 🤖\n\nSegure na mão de Deus e vá na Fé!!`
-},
+    number: 4,
+    title: "Nível 4 — Desafio Final! ⚠️ Chips corrompidos + Buracos",
+    startX: 3,
+    startY: 3,
+    chips: [
+      { x: 0, y: 0 },
+      { x: 7, y: 0 },
+      { x: 0, y: 7 },
+      { x: 7, y: 7 },
+      { x: 2, y: 5 },
+      { x: 5, y: 1 }
+    ],
+    corruptedChips: [     // ← NOVO: chips vermelhos
+      { x: 1, y: 4 },
+      { x: 6, y: 2 },
+      { x: 4, y: 5 },
+      { x: 2, y: 6 }
+    ],
+    traps: [              // ← NOVO: buracos/pisos quebrados
+      { x: 3, y: 1 },
+      { x: 5, y: 3 },
+      { x: 0, y: 2 },
+      { x: 7, y: 4 },
+      { x: 1, y: 6 },
+      { x: 6, y: 0 },
+      { x: 4, y: 7 },
+      { x: 2, y: 0 }
+    ],
+    solution: `Boa sorte meu consagrado... 🤖\n\nSegure na mão de Deus e vá na Fé!!`
+  },
 ];
 
-// Função auxiliar para retângulos arredondados
+// ==================== FUNÇÕES DE DESENHO (atualizadas) ==================== //
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -189,61 +231,42 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.quadraticCurveTo(x, y, x + r, y);
   ctx.closePath();
 }
+
 function drawRobot(px, py) {
+  // (mesmo código anterior - sem alteração)
   ctx.save();
-  
   ctx.translate(px, py);
-  
-  // Aumentado um pouco + mais largo
   const scale = 0.51;
   ctx.scale(scale, scale);
-
-  const ox = 0;      // centralizado
-  const oy = -9;     // ajuste vertical
-
-  // Sombra suave
+  const ox = 0;
+  const oy = -9;
   ctx.shadowColor = 'rgba(30, 58, 95, 0.35)';
   ctx.shadowBlur = 15;
   ctx.shadowOffsetY = 8;
-
   ctx.fillStyle = '#e0f2ff';
   ctx.strokeStyle = '#1e3a5f';
   ctx.lineWidth = 8;
-
-  // Corpo principal (mais largo)
   roundRect(ctx, ox - 29, oy - 10, 58, 63, 17);
   ctx.fill();
   ctx.stroke();
-
-  // Cabeça (mais larga)
   roundRect(ctx, ox - 32, oy - 56, 64, 49, 15);
   ctx.fill();
   ctx.stroke();
-
   ctx.shadowBlur = 0;
-
-  // Visor escuro
   ctx.fillStyle = '#0a2540';
   roundRect(ctx, ox - 23.5, oy - 49, 47, 35, 9);
   ctx.fill();
-
-  // Olhos
   ctx.fillStyle = '#00f5ff';
   ctx.fillRect(ox - 14.5, oy - 44, 9, 13.5);
   ctx.fillRect(ox + 5.5, oy - 44, 9, 13.5);
-
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(ox - 12, oy - 46, 3, 4);
   ctx.fillRect(ox + 8, oy - 46, 3, 4);
-
-  // Boca
   ctx.strokeStyle = '#00f5ff';
   ctx.lineWidth = 3.3;
   ctx.beginPath();
   ctx.arc(ox, oy - 28, 9, 0.25 * Math.PI, 0.75 * Math.PI);
   ctx.stroke();
-
-  // Antenas (podem subir um pouco acima do quadrado)
   ctx.strokeStyle = '#1e3a5f';
   ctx.lineWidth = 5;
   ctx.beginPath();
@@ -252,7 +275,6 @@ function drawRobot(px, py) {
   ctx.moveTo(ox + 17, oy - 61);
   ctx.lineTo(ox + 23, oy - 81);
   ctx.stroke();
-
   ctx.fillStyle = '#1e3a5f';
   ctx.beginPath(); 
   ctx.arc(ox - 23, oy - 81, 4.8, 0, Math.PI * 2); 
@@ -260,74 +282,126 @@ function drawRobot(px, py) {
   ctx.beginPath(); 
   ctx.arc(ox + 23, oy - 81, 4.8, 0, Math.PI * 2); 
   ctx.fill();
-
-  // Braços
   ctx.strokeStyle = '#1e3a5f';
   ctx.lineWidth = 9.8;
   ctx.beginPath();
   ctx.moveTo(ox - 28, oy + 14);
   ctx.quadraticCurveTo(ox - 46, oy + 21, ox - 50, oy + 39);
   ctx.stroke();
-
   ctx.beginPath();
   ctx.moveTo(ox + 28, oy + 14);
   ctx.quadraticCurveTo(ox + 46, oy + 21, ox + 50, oy + 39);
   ctx.stroke();
-
-  // Pernas
   ctx.lineWidth = 8.8;
   ctx.beginPath();
   ctx.moveTo(ox - 13.5, oy + 49);
   ctx.lineTo(ox - 18, oy + 73);
   ctx.stroke();
-
   ctx.beginPath();
   ctx.moveTo(ox + 13.5, oy + 49);
   ctx.lineTo(ox + 16, oy + 73);
   ctx.stroke();
-
   ctx.restore();
 }
 
+// Chip normal (verde)
 function drawChip(x, y, index, time) {
   if (chips[index].collected) return;
-
   const px = x * CELL + CELL / 2;
-  const py = y * CELL + CELL / 2 + Math.sin(time * 3 + index) * 7; // leve flutuação
-  const rot = Math.sin(time * 2.5 + index * 1.3) * 6;             // rotação mais suave
-
+  const py = y * CELL + CELL / 2 + Math.sin(time * 3 + index) * 7;
+  const rot = Math.sin(time * 2.5 + index * 1.3) * 6;
   ctx.save();
   ctx.translate(px, py);
   ctx.rotate(rot * Math.PI / 180);
-
-  // Escala menor para combinar com o robô
   const chipScale = 0.78;
   ctx.scale(chipScale, chipScale);
-
-  // Sombra mais suave
   ctx.shadowColor = '#059669';
   ctx.shadowBlur = 14;
   ctx.shadowOffsetY = 4;
-
   ctx.fillStyle = '#10b981';
-
-  // Chip um pouco menor e mais proporcional
   roundRect(ctx, -21, -25, 42, 50, 10);
   ctx.fill();
-
   ctx.shadowBlur = 0;
-
-  // Borda branca mais fina
   ctx.strokeStyle = '#ffffff';
   ctx.lineWidth = 4.5;
   ctx.stroke();
-
-  // Ícone 💾 maior e melhor centralizado
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 29px Arial';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText('💾', 0, 2);
+  ctx.restore();
+}
+
+// NOVO: Chip corrompido (vermelho)
+function drawCorruptedChip(x, y, index, time) {
+  const px = x * CELL + CELL / 2;
+  const py = y * CELL + CELL / 2 + Math.sin(time * 3 + index) * 7;
+  const rot = Math.sin(time * 2.5 + index * 1.3) * 6;
+  ctx.save();
+  ctx.translate(px, py);
+  ctx.rotate(rot * Math.PI / 180);
+  const chipScale = 0.78;
+  ctx.scale(chipScale, chipScale);
+  ctx.shadowColor = '#b91c1c';
+  ctx.shadowBlur = 14;
+  ctx.shadowOffsetY = 4;
+  ctx.fillStyle = '#ef4444';
+  roundRect(ctx, -21, -25, 42, 50, 10);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 4.5;
+  ctx.stroke();
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 29px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('💾', 0, 2);
+  ctx.restore();
+}
+
+// NOVO: Buracos e pisos quebrados
+function drawTrap(x, y, time) {
+  const px = x * CELL + CELL / 2;
+  const py = y * CELL + CELL / 2;
+  ctx.save();
+  ctx.translate(px, py);
+
+  // leve tremor visual
+  const shake = Math.sin(time * 12) * 1.5;
+
+  // base do piso quebrado
+  ctx.shadowColor = '#334155';
+  ctx.shadowBlur = 16;
+  ctx.shadowOffsetY = 5;
+  ctx.fillStyle = '#475569';
+  roundRect(ctx, -29, -29, 58, 58, 9);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // rachaduras
+  ctx.strokeStyle = '#1e2937';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(-20 + shake, -20);
+  ctx.quadraticCurveTo(-5, -8, 18, -15);
+  ctx.moveTo(20 + shake, 10);
+  ctx.quadraticCurveTo(5, 20, -18, 22);
+  ctx.stroke();
+
+  // buraco central
+  ctx.fillStyle = '#0f172a';
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 19, 14, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // emoji de buraco
+  ctx.fillStyle = '#e2e8f0';
+  ctx.font = 'bold 32px system-ui';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('🕳️', 0, 3);
 
   ctx.restore();
 }
@@ -357,7 +431,13 @@ function draw() {
     ctx.beginPath(); ctx.moveTo(0, i * CELL); ctx.lineTo(canvas.width, i * CELL); ctx.stroke();
   }
 
+  // NOVO: Desenha obstáculos ANTES dos chips
+  traps.forEach((trap, i) => drawTrap(trap.x, trap.y, time + i));
+  corruptedChips.forEach((_, i) => drawCorruptedChip(corruptedChips[i].x, corruptedChips[i].y, i, time));
+
+  // Chips normais
   chips.forEach((_, i) => drawChip(chips[i].x, chips[i].y, i, time));
+
   drawRobot(robotPixel.x, robotPixel.y);
 }
 
@@ -385,7 +465,26 @@ async function moveTo(newGridX, newGridY) {
   robotPixel.y = targetY;
   draw();
 
-  // Coleta de chipe
+  // ==================== VERIFICAÇÃO DE OBSTÁCULOS (NOVO) ====================
+  // 1. Buracos / pisos quebrados
+  if (traps.some(t => t.x === robot.gridX && t.y === robot.gridY)) {
+    shouldStopExecution = true;
+    document.getElementById('status').innerHTML = `💥 Caiu em um buraco ou piso quebrado!<br>Resetando a fase...`;
+    setTimeout(resetNivel, 900);
+    return;
+  }
+
+  // 2. Chips corrompidos (vermelhos)
+  for (let i = 0; i < corruptedChips.length; i++) {
+    if (corruptedChips[i].x === robot.gridX && corruptedChips[i].y === robot.gridY) {
+      shouldStopExecution = true;
+      document.getElementById('status').innerHTML = `⚠️ Chip corrompido coletado!<br>Resetando a fase...`;
+      setTimeout(resetNivel, 900);
+      return;
+    }
+  }
+
+  // 3. Coleta de chips normais (só se não caiu em obstáculo)
   chips.forEach(chip => {
     if (!chip.collected && chip.x === robot.gridX && chip.y === robot.gridY) {
       chip.collected = true;
@@ -404,11 +503,12 @@ async function moveTo(newGridX, newGridY) {
   }
 }
 
-// ==================== EXECUTAR CÓDIGO (VERSÃO CORRIGIDA) ==================== //
+// ==================== EXECUTAR CÓDIGO ==================== //
 async function executarCodigo() {
   if (isRunning) return;
 
   isRunning = true;
+  shouldStopExecution = false;
   const status = document.getElementById('status');
   const codeArea = document.getElementById('code');
 
@@ -421,7 +521,6 @@ async function executarCodigo() {
     const cmd = line.trim();
     if (cmd === '') continue;
 
-    // Parse do comando: nome + parâmetro opcional
     const match = cmd.match(/^(\w+)\s*\(?\s*(\d*)\s*\)?$/);
     
     if (!match) {
@@ -431,18 +530,17 @@ async function executarCodigo() {
     }
 
     const commandName = match[1];
-    let quantidade = 1; // valor padrão
+    let quantidade = 1;
 
     if (match[2] !== '') {
       quantidade = parseInt(match[2]);
       if (isNaN(quantidade) || quantidade < 1) {
-        status.innerHTML = `❌ Quantidade inválida em: <b>${cmd}</b> (use números positivos)`;
+        status.innerHTML = `❌ Quantidade inválida em: <b>${cmd}</b>`;
         isRunning = false;
         return;
       }
     }
 
-    // Executa o comando com a quantidade
     if (commandFunctions[commandName]) {
       await commandFunctions[commandName](quantidade);
     } else {
@@ -450,14 +548,19 @@ async function executarCodigo() {
       isRunning = false;
       return;
     }
+
+    // NOVO: Se caiu em obstáculo, para a execução imediatamente
+    if (shouldStopExecution) {
+      isRunning = false;
+      shouldStopExecution = false;
+      return;
+    }
   }
 
   isRunning = false;
 
-  // Limpa o editor após executar
   codeArea.innerHTML = '';
 
-  // Verifica vitória
   if (chips.every(c => c.collected)) {
     status.innerHTML = `🎉 Nível ${levels[currentLevelIndex].number} concluído!`;
     document.getElementById('btn-proximo').style.display = 'flex';
@@ -469,7 +572,7 @@ async function executarCodigo() {
 
 async function moverDireita(quantidade = 1) {
   for (let i = 0; i < quantidade; i++) {
-    if (robot.gridX >= COLS - 1) break; // não ultrapassa o limite
+    if (robot.gridX >= COLS - 1) break;
     await moveTo(robot.gridX + 1, robot.gridY);
   }
 }
@@ -495,7 +598,6 @@ async function moverBaixo(quantidade = 1) {
   }
 }
 
-// Objeto com as funções (agora aceitam parâmetro)
 const commandFunctions = {
   'moverDireita': moverDireita,
   'moverEsquerda': moverEsquerda,
@@ -514,12 +616,11 @@ function loadLevel(index) {
   };
 
   chips = level.chips.map(chip => ({ ...chip, collected: false }));
+  corruptedChips = level.corruptedChips ? level.corruptedChips.map(c => ({...c})) : [];
+  traps = level.traps ? [...level.traps] : [];
 
   document.getElementById('level-title').innerText = level.title;
-  
-  // Editor sempre começa vazio
   document.getElementById('code').innerHTML = '';
-  
   document.getElementById('status').innerHTML = '';
   document.getElementById('btn-proximo').style.display = 'none';
 
@@ -536,21 +637,18 @@ function proximoNivel() {
 }
 
 function mostrarDica() {
-  alert('💡 Dica: Planeje o caminho antes de executar. Cada chipe deve ser visitado!');
+  alert('💡 Dica: Planeje o caminho antes de executar. Evite chips vermelhos e buracos!');
 }
 
 function mostrarSolucao() {
   const level = levels[currentLevelIndex];
-  
-  if (currentLevelIndex === 3) {  // Nível 4 (índice 3)
+  if (currentLevelIndex === 3) {
     document.getElementById('code').innerText = level.solution;
     document.getElementById('status').innerHTML = '💡 Mensagem carregada!';
-  } 
-  else if (level.solution && level.solution.trim() !== '') {
+  } else if (level.solution && level.solution.trim() !== '') {
     document.getElementById('code').innerText = level.solution;
     document.getElementById('status').innerHTML = '📋 Solução carregada!';
-  } 
-  else {
+  } else {
     alert('🤖 Neste nível a solução ainda não foi fornecida.');
   }
 }
