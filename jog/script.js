@@ -63,157 +63,41 @@ const levels = [
     title: "Nível 1 — Colete os 4 chipes!",
     startX: 4,
     startY: 5,
-    chips: [
-      { x: 2, y: 2 },
-      { x: 5, y: 1 },
-      { x: 7, y: 6 },
-      { x: 3, y: 7 }
-    ],
+    chips: [{ x: 2, y: 2 }, { x: 5, y: 1 }, { x: 7, y: 6 }, { x: 3, y: 7 }],
     corruptedChips: [],
     traps: [],
-    solution: `
-moverBaixo()
-moverBaixo()
-moverEsquerda()
-moverEsquerda()
-moverCima()
-moverCima()
-moverCima()
-moverCima()
-moverCima()
-moverCima()
-moverDireita()
-moverDireita()
-moverDireita()
-moverDireita()
-moverDireita()
-moverBaixo()
-moverBaixo()
-moverBaixo()
-moverBaixo()
-moverBaixo()`
+    solution: `moverBaixo()\nmoverBaixo()\nmoverEsquerda()\nmoverEsquerda()\nmoverCima()\nmoverCima()\nmoverCima()\nmoverCima()\nmoverCima()\nmoverCima()\nmoverDireita()\nmoverDireita()\nmoverDireita()\nmoverDireita()\nmoverDireita()\nmoverBaixo()\nmoverBaixo()\nmoverBaixo()\nmoverBaixo()\nmoverBaixo()`
   },
   {
     number: 2,
     title: "Nível 2 — Chipes em linha reta! ⚠️ Cuidado com os chips corrompidos",
     startX: 0,
     startY: 7,
-    chips: [
-      { x: 7, y: 7 },
-      { x: 7, y: 4 },
-      { x: 7, y: 1 },
-      { x: 3, y: 3 }
-    ],
-    corruptedChips: [
-      { x: 2, y: 6 },
-      { x: 4, y: 5 },
-      { x: 6, y: 3 },
-      { x: 1, y: 1 },
-      { x: 5, y: 0 }
-    ],
+    chips: [{ x: 7, y: 7 }, { x: 7, y: 4 }, { x: 7, y: 1 }, { x: 3, y: 3 }],
+    corruptedChips: [{ x: 2, y: 6 }, { x: 4, y: 5 }, { x: 6, y: 3 }, { x: 1, y: 1 }, { x: 5, y: 0 }],
     traps: [],
-    solution: `moverDireita()
-moverDireita()
-moverDireita()
-moverDireita()
-moverDireita()
-moverDireita()
-moverDireita()
-moverCima()
-moverCima()
-moverCima()
-moverCima()
-moverCima()
-moverCima()
-moverEsquerda()
-moverEsquerda()
-moverEsquerda()
-moverEsquerda()
-moverBaixo()
-moverBaixo()`
+    solution: `moverDireita()\nmoverDireita()\nmoverDireita()\nmoverDireita()\nmoverDireita()\nmoverDireita()\nmoverDireita()\nmoverCima()\nmoverCima()\nmoverCima()\nmoverCima()\nmoverCima()\nmoverCima()\nmoverEsquerda()\nmoverEsquerda()\nmoverEsquerda()\nmoverEsquerda()\nmoverBaixo()\nmoverBaixo()`
   },
   {
     number: 3,
     title: "Nível 3 — Labirinto simples 🕳️ Evite os buracos e pisos quebrados!",
     startX: 7,
     startY: 0,
-    chips: [
-      { x: 0, y: 0 },
-      { x: 2, y: 4 },
-      { x: 5, y: 2 },
-      { x: 4, y: 7 },
-      { x: 1, y: 6 }
-    ],
+    chips: [{ x: 0, y: 0 }, { x: 2, y: 4 }, { x: 5, y: 2 }, { x: 4, y: 7 }, { x: 1, y: 6 }],
     corruptedChips: [],
-    traps: [
-      { x: 3, y: 1 },
-      { x: 6, y: 4 },
-      { x: 4, y: 3 },
-      { x: 2, y: 3 },
-      { x: 0, y: 5 },
-      { x: 7, y: 3 },
-      { x: 5, y: 6 },
-      { x: 3, y: 6 },
-      { x: 1, y: 2 }
-    ],
-    solution: `moverEsquerda()
-moverEsquerda()
-moverEsquerda()
-moverEsquerda()
-moverEsquerda()
-moverEsquerda()
-moverEsquerda()
-moverBaixo()
-moverDireita()
-moverDireita()
-moverBaixo()
-moverDireita()
-moverDireita()
-moverDireita()
-moverBaixo()
-moverBaixo()
-moverEsquerda()
-moverEsquerda()
-moverEsquerda()
-moverEsquerda()
-moverBaixo()
-moverBaixo()
-moverBaixo()
-moverDireita()
-moverDireita()
-moverDireita()`
+    traps: [{ x: 3, y: 1 }, { x: 6, y: 4 }, { x: 4, y: 3 }, { x: 2, y: 3 }, { x: 0, y: 5 }, { x: 7, y: 3 }, { x: 5, y: 6 }, { x: 3, y: 6 }, { x: 1, y: 2 }],
+    solution: `moverEsquerda()\nmoverEsquerda()\nmoverEsquerda()\nmoverEsquerda()\nmoverEsquerda()\nmoverEsquerda()\nmoverEsquerda()\nmoverBaixo()\nmoverDireita()\nmoverDireita()\nmoverBaixo()\nmoverDireita()\nmoverDireita()\nmoverDireita()\nmoverBaixo()\nmoverBaixo()\nmoverEsquerda()\nmoverEsquerda()\nmoverEsquerda()\nmoverEsquerda()\nmoverBaixo()\nmoverBaixo()\nmoverBaixo()\nmoverDireita()\nmoverDireita()\nmoverDireita()`
   },
   {
     number: 4,
     title: "Nível 4 — Desafio Final! ⚠️ Boa Sorte!!",
     startX: 3,
     startY: 3,
-    chips: [
-      { x: 0, y: 0 },
-      { x: 7, y: 0 },
-      { x: 0, y: 7 },
-      { x: 7, y: 7 },
-      { x: 2, y: 5 },
-      { x: 5, y: 1 }
-    ],
-    corruptedChips: [
-      { x: 1, y: 4 },
-      { x: 6, y: 2 },
-      { x: 4, y: 5 },
-      { x: 2, y: 6 }
-    ],
-    traps: [
-      { x: 3, y: 1 },
-      { x: 5, y: 3 },
-      { x: 0, y: 2 },
-      { x: 7, y: 4 },
-      { x: 1, y: 6 },
-      { x: 6, y: 0 },
-      { x: 4, y: 7 },
-      { x: 2, y: 0 }
-    ],
+    chips: [{ x: 0, y: 0 }, { x: 7, y: 0 }, { x: 0, y: 7 }, { x: 7, y: 7 }, { x: 2, y: 5 }, { x: 5, y: 1 }],
+    corruptedChips: [{ x: 1, y: 4 }, { x: 6, y: 2 }, { x: 4, y: 5 }, { x: 2, y: 6 }],
+    traps: [{ x: 3, y: 1 }, { x: 5, y: 3 }, { x: 0, y: 2 }, { x: 7, y: 4 }, { x: 1, y: 6 }, { x: 6, y: 0 }, { x: 4, y: 7 }, { x: 2, y: 0 }],
     solution: `Boa sorte meu consagrado... 🤖\n\nSegure na mão de Deus e vá na Fé!!`
-  },
+  }
 ];
 
 // ==================== FUNÇÕES DE DESENHO ==================== //
@@ -231,7 +115,7 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-function drawRobot(px, py) {
+function drawRobot(px, py) { /* mesma função do código original */ 
   ctx.save();
   ctx.translate(px, py);
   const scale = 0.51;
@@ -245,11 +129,9 @@ function drawRobot(px, py) {
   ctx.strokeStyle = '#1e3a5f';
   ctx.lineWidth = 8;
   roundRect(ctx, ox - 29, oy - 10, 58, 63, 17);
-  ctx.fill();
-  ctx.stroke();
+  ctx.fill(); ctx.stroke();
   roundRect(ctx, ox - 32, oy - 56, 64, 49, 15);
-  ctx.fill();
-  ctx.stroke();
+  ctx.fill(); ctx.stroke();
   ctx.shadowBlur = 0;
   ctx.fillStyle = '#0a2540';
   roundRect(ctx, ox - 23.5, oy - 49, 47, 35, 9);
@@ -274,12 +156,8 @@ function drawRobot(px, py) {
   ctx.lineTo(ox + 23, oy - 81);
   ctx.stroke();
   ctx.fillStyle = '#1e3a5f';
-  ctx.beginPath(); 
-  ctx.arc(ox - 23, oy - 81, 4.8, 0, Math.PI * 2); 
-  ctx.fill();
-  ctx.beginPath(); 
-  ctx.arc(ox + 23, oy - 81, 4.8, 0, Math.PI * 2); 
-  ctx.fill();
+  ctx.beginPath(); ctx.arc(ox - 23, oy - 81, 4.8, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(ox + 23, oy - 81, 4.8, 0, Math.PI * 2); ctx.fill();
   ctx.strokeStyle = '#1e3a5f';
   ctx.lineWidth = 9.8;
   ctx.beginPath();
@@ -302,7 +180,7 @@ function drawRobot(px, py) {
   ctx.restore();
 }
 
-function drawChip(x, y, index, time) {
+function drawChip(x, y, index, time) { /* mesma função */ 
   if (chips[index].collected) return;
   const px = x * CELL + CELL / 2;
   const py = y * CELL + CELL / 2 + Math.sin(time * 3 + index) * 7;
@@ -330,7 +208,7 @@ function drawChip(x, y, index, time) {
   ctx.restore();
 }
 
-function drawCorruptedChip(x, y, index, time) {
+function drawCorruptedChip(x, y, index, time) { /* mesma função */ 
   const px = x * CELL + CELL / 2;
   const py = y * CELL + CELL / 2 + Math.sin(time * 3 + index) * 7;
   const rot = Math.sin(time * 2.5 + index * 1.3) * 6;
@@ -346,7 +224,7 @@ function drawCorruptedChip(x, y, index, time) {
   roundRect(ctx, -21, -25, 42, 50, 10);
   ctx.fill();
   ctx.shadowBlur = 0;
-  ctx.strokeStyle = '#26ff0a';
+  ctx.strokeStyle = '#48ff00';
   ctx.lineWidth = 4.5;
   ctx.stroke();
   ctx.fillStyle = '#ffffff';
@@ -357,7 +235,7 @@ function drawCorruptedChip(x, y, index, time) {
   ctx.restore();
 }
 
-function drawTrap(x, y, time) {
+function drawTrap(x, y, time) { /* mesma função */ 
   const px = x * CELL + CELL / 2;
   const py = y * CELL + CELL / 2;
   ctx.save();
@@ -405,7 +283,6 @@ function draw() {
   ctx.fillText('< />', canvas.width/2, canvas.height/2 + 15);
   ctx.restore();
 
-  // Grade
   ctx.strokeStyle = '#d1d5db';
   ctx.lineWidth = 2.8;
   for (let i = 0; i <= COLS; i++) {
@@ -476,9 +353,15 @@ async function moveTo(newGridX, newGridY) {
   }
 
   if (chips.every(c => c.collected)) {
+    const isLastLevel = currentLevelIndex === levels.length - 1;
     document.getElementById('status').innerHTML = `🎉 Nível ${levels[currentLevelIndex].number} concluído!`;
-    document.getElementById('btn-proximo').style.display = 'flex';
-    setTimeout(() => alert(`🏆 Nível ${levels[currentLevelIndex].number} concluído com sucesso!`), 400);
+    const btn = document.getElementById('btn-proximo');
+    if (isLastLevel) {
+      btn.style.display = 'none';
+      setTimeout(() => alert('🏆 PARABÉNS! Você completou TODOS os 4 níveis!\n\nVocê é um mestre da programação! 🎉'), 300);
+    } else {
+      btn.style.display = 'flex';
+    }
     saveProgress(levels[currentLevelIndex].number);
   }
 }
@@ -486,7 +369,6 @@ async function moveTo(newGridX, newGridY) {
 // ==================== EXECUTAR CÓDIGO ==================== //
 async function executarCodigo() {
   if (isRunning) return;
-
   isRunning = true;
   shouldStopExecution = false;
   const status = document.getElementById('status');
@@ -502,7 +384,6 @@ async function executarCodigo() {
     if (cmd === '') continue;
 
     const match = cmd.match(/^(\w+)\s*\(?\s*(\d*)\s*\)?$/);
-    
     if (!match) {
       status.innerHTML = `❌ Comando inválido: <b>${cmd}</b>`;
       isRunning = false;
@@ -511,7 +392,6 @@ async function executarCodigo() {
 
     const commandName = match[1];
     let quantidade = 1;
-
     if (match[2] !== '') {
       quantidade = parseInt(match[2]);
       if (isNaN(quantidade) || quantidade < 1) {
@@ -539,10 +419,16 @@ async function executarCodigo() {
   isRunning = false;
 
   if (chips.every(c => c.collected)) {
+    const isLastLevel = currentLevelIndex === levels.length - 1;
     status.innerHTML = `🎉 Nível ${levels[currentLevelIndex].number} concluído!`;
-    document.getElementById('btn-proximo').style.display = 'flex';
+    const btn = document.getElementById('btn-proximo');
+    if (isLastLevel) {
+      btn.style.display = 'none';
+    } else {
+      btn.style.display = 'flex';
+    }
   } else {
-    status.innerHTML = '✅ Código executado! Editor limpo.';
+    status.innerHTML = '✅ Código executado!';
     codeArea.innerHTML = '';
   }
 }
@@ -582,52 +468,41 @@ const commandFunctions = {
   'moverBaixo': moverBaixo
 };
 
-// ==================== ATALHOS COM SETAS DO TECLADO ==================== //
+// ==================== ATALHOS COM SETAS + SCROLL ==================== //
 const codeArea = document.getElementById('code');
 
+function scrollToBottom() {
+  codeArea.scrollTop = codeArea.scrollHeight;
+}
+
 codeArea.addEventListener('keydown', function(e) {
-    if (e.ctrlKey || e.shiftKey || e.altKey) return;
+  if (e.ctrlKey || e.shiftKey || e.altKey) return;
 
-    let comando = '';
-
-    switch (e.key) {
-        case 'ArrowRight':
-            comando = 'moverDireita()';
-            break;
-        case 'ArrowLeft':
-            comando = 'moverEsquerda()';
-            break;
-        case 'ArrowUp':
-            comando = 'moverCima()';
-            break;
-        case 'ArrowDown':
-            comando = 'moverBaixo()';
-            break;
-        default:
-            return;
-    }
-
-    e.preventDefault();
-    inserirNoCursor(comando);
-    inserirNoCursor('\n');
+  let comando = '';
+  switch (e.key) {
+    case 'ArrowRight': comando = 'moverDireita()'; break;
+    case 'ArrowLeft':  comando = 'moverEsquerda()'; break;
+    case 'ArrowUp':    comando = 'moverCima()'; break;
+    case 'ArrowDown':  comando = 'moverBaixo()'; break;
+    default: return;
+  }
+  e.preventDefault();
+  inserirNoCursor(comando + '\n');
+  scrollToBottom();
 });
 
 function inserirNoCursor(texto) {
-    const sel = window.getSelection();
-    if (!sel.rangeCount) return;
-
-    const range = sel.getRangeAt(0);
-    range.deleteContents();
-
-    const textNode = document.createTextNode(texto);
-    range.insertNode(textNode);
-
-    range.setStartAfter(textNode);
-    range.setEndAfter(textNode);
-    sel.removeAllRanges();
-    sel.addRange(range);
-
-    codeArea.scrollTop = codeArea.scrollHeight;
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  range.deleteContents();
+  const textNode = document.createTextNode(texto);
+  range.insertNode(textNode);
+  range.setStartAfter(textNode);
+  range.setEndAfter(textNode);
+  sel.removeAllRanges();
+  sel.addRange(range);
+  scrollToBottom();
 }
 
 // ==================== FUNÇÕES DO JOGO ==================== //
@@ -636,10 +511,7 @@ function loadLevel(index) {
   const level = levels[index];
 
   robot = { gridX: level.startX, gridY: level.startY };
-  robotPixel = { 
-    x: level.startX * CELL + CELL/2, 
-    y: level.startY * CELL + CELL/2 
-  };
+  robotPixel = { x: level.startX * CELL + CELL/2, y: level.startY * CELL + CELL/2 };
 
   chips = level.chips.map(chip => ({ ...chip, collected: false }));
   corruptedChips = level.corruptedChips ? level.corruptedChips.map(c => ({...c})) : [];
@@ -696,7 +568,6 @@ setInterval(() => {
   if (!isRunning) draw();
 }, 80);
 
-// Atalho Ctrl + Enter para executar
 document.getElementById('code').addEventListener('keydown', function(e) {
   if (e.ctrlKey && e.key === 'Enter') {
     e.preventDefault();
