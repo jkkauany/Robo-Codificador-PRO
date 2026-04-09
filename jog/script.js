@@ -8,10 +8,10 @@ let currentLevelIndex = 0;
 let robot = { gridX: 0, gridY: 0 };
 let robotPixel = { x: 0, y: 0 };
 let chips = [];
-let corruptedChips = [];   // NOVO: chips vermelhos que resetam a fase
-let traps = [];            // NOVO: buracos e pisos quebrados que resetam a fase
+let corruptedChips = [];
+let traps = [];
 let isRunning = false;
-let shouldStopExecution = false; // NOVO: para parar a execução quando cair em obstáculo
+let shouldStopExecution = false;
 
 // ==================== PROGRESSO ==================== //
 let completedLevels = [];
@@ -56,7 +56,7 @@ function updateProgressBar() {
   }
 }
 
-// =============== NÍVEIS (com obstáculos novos) =============== //
+// =============== NÍVEIS =============== //
 const levels = [
   {
     number: 1,
@@ -69,7 +69,7 @@ const levels = [
       { x: 7, y: 6 },
       { x: 3, y: 7 }
     ],
-    corruptedChips: [], // sem obstáculos
+    corruptedChips: [],
     traps: [],
     solution: `
 moverBaixo()
@@ -104,7 +104,7 @@ moverBaixo()`
       { x: 7, y: 1 },
       { x: 3, y: 3 }
     ],
-    corruptedChips: [     // ← NOVO: chips vermelhos (resetam se coletados)
+    corruptedChips: [
       { x: 2, y: 6 },
       { x: 4, y: 5 },
       { x: 6, y: 3 },
@@ -145,7 +145,7 @@ moverBaixo()`
       { x: 1, y: 6 }
     ],
     corruptedChips: [],
-    traps: [              // ← NOVO: buracos/pisos quebrados (resetam se pisar)
+    traps: [
       { x: 3, y: 1 },
       { x: 6, y: 4 },
       { x: 4, y: 3 },
@@ -181,12 +181,11 @@ moverBaixo()
 moverBaixo()
 moverDireita()
 moverDireita()
-moverDireita()
-`
+moverDireita()`
   },
   {
     number: 4,
-    title: "Nível 4 — Desafio Final! ⚠️ Chips corrompidos + Buracos",
+    title: "Nível 4 — Desafio Final! ⚠️ Boa Sorte!!",
     startX: 3,
     startY: 3,
     chips: [
@@ -197,13 +196,13 @@ moverDireita()
       { x: 2, y: 5 },
       { x: 5, y: 1 }
     ],
-    corruptedChips: [     // ← NOVO: chips vermelhos
+    corruptedChips: [
       { x: 1, y: 4 },
       { x: 6, y: 2 },
       { x: 4, y: 5 },
       { x: 2, y: 6 }
     ],
-    traps: [              // ← NOVO: buracos/pisos quebrados
+    traps: [
       { x: 3, y: 1 },
       { x: 5, y: 3 },
       { x: 0, y: 2 },
@@ -217,7 +216,7 @@ moverDireita()
   },
 ];
 
-// ==================== FUNÇÕES DE DESENHO (atualizadas) ==================== //
+// ==================== FUNÇÕES DE DESENHO ==================== //
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -233,7 +232,6 @@ function roundRect(ctx, x, y, w, h, r) {
 }
 
 function drawRobot(px, py) {
-  // (mesmo código anterior - sem alteração)
   ctx.save();
   ctx.translate(px, py);
   const scale = 0.51;
@@ -333,7 +331,7 @@ function drawChip(x, y, index, time) {
   ctx.restore();
 }
 
-// NOVO: Chip corrompido (vermelho)
+// Chip corrompido (vermelho)
 function drawCorruptedChip(x, y, index, time) {
   const px = x * CELL + CELL / 2;
   const py = y * CELL + CELL / 2 + Math.sin(time * 3 + index) * 7;
@@ -343,14 +341,14 @@ function drawCorruptedChip(x, y, index, time) {
   ctx.rotate(rot * Math.PI / 180);
   const chipScale = 0.78;
   ctx.scale(chipScale, chipScale);
-  ctx.shadowColor = '#b91c1c';
+  ctx.shadowColor = '#059669';
   ctx.shadowBlur = 14;
   ctx.shadowOffsetY = 4;
-  ctx.fillStyle = '#ef4444';
+  ctx.fillStyle = '#10b981';
   roundRect(ctx, -21, -25, 42, 50, 10);
   ctx.fill();
   ctx.shadowBlur = 0;
-  ctx.strokeStyle = '#ffffff';
+  ctx.strokeStyle = '#5fff02';
   ctx.lineWidth = 4.5;
   ctx.stroke();
   ctx.fillStyle = '#ffffff';
@@ -361,17 +359,13 @@ function drawCorruptedChip(x, y, index, time) {
   ctx.restore();
 }
 
-// NOVO: Buracos e pisos quebrados
+// Buracos e pisos quebrados
 function drawTrap(x, y, time) {
   const px = x * CELL + CELL / 2;
   const py = y * CELL + CELL / 2;
   ctx.save();
   ctx.translate(px, py);
-
-  // leve tremor visual
   const shake = Math.sin(time * 12) * 1.5;
-
-  // base do piso quebrado
   ctx.shadowColor = '#334155';
   ctx.shadowBlur = 16;
   ctx.shadowOffsetY = 5;
@@ -379,8 +373,6 @@ function drawTrap(x, y, time) {
   roundRect(ctx, -29, -29, 58, 58, 9);
   ctx.fill();
   ctx.shadowBlur = 0;
-
-  // rachaduras
   ctx.strokeStyle = '#1e2937';
   ctx.lineWidth = 4;
   ctx.beginPath();
@@ -389,20 +381,15 @@ function drawTrap(x, y, time) {
   ctx.moveTo(20 + shake, 10);
   ctx.quadraticCurveTo(5, 20, -18, 22);
   ctx.stroke();
-
-  // buraco central
   ctx.fillStyle = '#0f172a';
   ctx.beginPath();
   ctx.ellipse(0, 0, 19, 14, 0, 0, Math.PI * 2);
   ctx.fill();
-
-  // emoji de buraco
   ctx.fillStyle = '#e2e8f0';
   ctx.font = 'bold 32px system-ui';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText('🕳️', 0, 3);
-
   ctx.restore();
 }
 
@@ -431,11 +418,8 @@ function draw() {
     ctx.beginPath(); ctx.moveTo(0, i * CELL); ctx.lineTo(canvas.width, i * CELL); ctx.stroke();
   }
 
-  // NOVO: Desenha obstáculos ANTES dos chips
   traps.forEach((trap, i) => drawTrap(trap.x, trap.y, time + i));
   corruptedChips.forEach((_, i) => drawCorruptedChip(corruptedChips[i].x, corruptedChips[i].y, i, time));
-
-  // Chips normais
   chips.forEach((_, i) => drawChip(chips[i].x, chips[i].y, i, time));
 
   drawRobot(robotPixel.x, robotPixel.y);
@@ -465,26 +449,26 @@ async function moveTo(newGridX, newGridY) {
   robotPixel.y = targetY;
   draw();
 
-  // ==================== VERIFICAÇÃO DE OBSTÁCULOS (NOVO) ====================
-  // 1. Buracos / pisos quebrados
+  // ==================== ALERTAS DE OBSTÁCULOS ====================
   if (traps.some(t => t.x === robot.gridX && t.y === robot.gridY)) {
     shouldStopExecution = true;
-    document.getElementById('status').innerHTML = `💥 Caiu em um buraco ou piso quebrado!<br>Resetando a fase...`;
-    setTimeout(resetNivel, 900);
+    alert('💥 Você caiu no buraco negro!\n\nA fase foi resetada.');
+    document.getElementById('status').innerHTML = `💥 Caiu em um buraco! Resetando...`;
+    setTimeout(resetNivel, 800);
     return;
   }
 
-  // 2. Chips corrompidos (vermelhos)
   for (let i = 0; i < corruptedChips.length; i++) {
     if (corruptedChips[i].x === robot.gridX && corruptedChips[i].y === robot.gridY) {
       shouldStopExecution = true;
-      document.getElementById('status').innerHTML = `⚠️ Chip corrompido coletado!<br>Resetando a fase...`;
-      setTimeout(resetNivel, 900);
+      alert('⚠️ Chip corrompido coletado!\n\nA fase foi resetada.');
+      document.getElementById('status').innerHTML = `⚠️ Chip corrompido! Resetando...`;
+      setTimeout(resetNivel, 800);
       return;
     }
   }
 
-  // 3. Coleta de chips normais (só se não caiu em obstáculo)
+  // Coleta normal de chips verdes
   chips.forEach(chip => {
     if (!chip.collected && chip.x === robot.gridX && chip.y === robot.gridY) {
       chip.collected = true;
@@ -549,7 +533,6 @@ async function executarCodigo() {
       return;
     }
 
-    // NOVO: Se caiu em obstáculo, para a execução imediatamente
     if (shouldStopExecution) {
       isRunning = false;
       shouldStopExecution = false;
@@ -558,7 +541,6 @@ async function executarCodigo() {
   }
 
   isRunning = false;
-
   codeArea.innerHTML = '';
 
   if (chips.every(c => c.collected)) {
