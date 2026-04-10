@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🤖 Robô Codificador PRO</title>
+    <title>Robô Programador Pro</title>
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
 
     <!-- 
-💡 MELHORIAS PROPOSTAS PARA EVOLUÇÃO DO PROJETO
+MELHORIAS PROPOSTAS PARA EVOLUÇÃO DO PROJETO
 
 - Criar uma função única para verificar a vitória do jogador, evitando repetição de código.
 
@@ -22,19 +22,18 @@
 - Implementar confirmação antes de reiniciar o nível.
 
 - Melhorar os feedbacks visuais (coleta de itens, erros, vitória).
-- 
 -->
 
     <!-- HEADER COM BARRA DE PROGRESSO -->
     <div class="header">
       <div class="logo">
-        🤖 <span>Robô Codificador</span>
+        <span>Robô Programador</span>
       </div>
 
       <div class="progress-bar" id="progress-bar"></div>
 
       <button onclick="resetProgress()" class="btn-reset-progress">
-        🗑️ Resetar Progresso
+        Resetar Progresso
       </button>
     </div>
 
@@ -42,15 +41,15 @@
       <!-- EDITOR -->
       <div class="editor">
         <div class="editor-header">
-          <span id="level-title">Nível 1 — Colete os 4 chipes!</span>
+          <span id="level-title">Nível 1 — Colete os 4 chips</span>
           <span style="color:#ffd93d; cursor:pointer;"
-            onclick="mostrarDica()">💡 Dica</span>
+            onclick="mostrarDica()">Dica</span>
         </div>
 
-        <!-- HUD Vidas + Timer (NOVA PARTE) -->
+        <!-- HUD Vidas + Timer -->
         <div class="hud">
-          <div id="lives" class="lives">❤️❤️❤️</div>
-          <div id="timer" class="timer">⏱️ <span id="time-left">60</span>s</div>
+          <div id="lives" class="lives">Vidas: 3</div>
+          <div id="timer" class="timer">Tempo: <span id="time-left">60</span>s</div>
         </div>
 
         <!-- Área de código -->
@@ -59,14 +58,13 @@
 
         <!-- Botões abaixo do editor -->
         <div class="controls">
-          <button onclick="executarCodigo()" class="btn-exec">▶️
-            Executar</button>
+          <button onclick="executarCodigo()" class="btn-exec">Executar</button>
           <button onclick="mostrarSolucao()"
-            class="btn-solucao">❓Solução</button>
-          <button onclick="mostrarDocs()" class="btn-docs">📖 Tutorial</button>
-          <button onclick="resetNivel()" class="btn-reset">🔄 Reset</button>
+            class="btn-solucao">Solução</button>
+          <button onclick="mostrarDocs()" class="btn-docs">Tutorial</button>
+          <button onclick="resetNivel()" class="btn-reset">Reiniciar</button>
           <button onclick="proximoNivel()" id="btn-proximo" class="btn-proximo"
-            style="display:none;">Próximo Nível ▶</button>
+            style="display:none;">Próximo Nível</button>
         </div>
 
         <div id="status" class="status"></div>
@@ -78,26 +76,21 @@
       </div>
     </div>
 
-    <!-- MODAL DOCUMENTAÇÃO (sem nenhuma mudança) -->
+    <!-- MODAL DOCUMENTAÇÃO -->
     <div id="modal-docs">
       <div class="modal-content">
-        <h2>📖 Comandos Disponíveis</h2>
+        <h2>Comandos Disponíveis</h2>
         <ul>
-          <li><strong>moverEsquerda()</strong> — Move o robô 1 casa para a
-            esquerda</li>
-          <li><strong>moverDireita()</strong> — Move o robô 1 casa para a
-            direita</li>
+          <li><strong>moverEsquerda()</strong> — Move o robô 1 casa para a esquerda</li>
+          <li><strong>moverDireita()</strong> — Move o robô 1 casa para a direita</li>
           <li><strong>moverCima()</strong> — Move o robô 1 casa para cima</li>
           <li><strong>moverBaixo()</strong> — Move o robô 1 casa para baixo</li>
         </ul><br>
         <p style="font-size:14px; color:#64748b; margin-bottom:24px;">
-          O robô tambem podera anda com parametros EX (x) = x quantidades de
-          casas.<br>
-          OBS: para avançar apenas UMA casa o parametro ficara sem uma
-          quantidade especifica EX () <br>
+          O robô também pode se mover com parâmetros. Exemplo: (x) = quantidade de casas.<br>
+          Para avançar apenas uma casa, deixe o parâmetro vazio: ()<br>
           Escreva um comando por linha no editor.<br>
-          O robô tambem anda com os comandos de setas?<br>
-          O robô só entende esses 4 comandos por enquanto.
+          O robô reconhece apenas os quatro comandos disponíveis no tutorial.
         </p>
         <button onclick="fecharModal()" class="btn-fechar">Fechar</button>
       </div>
