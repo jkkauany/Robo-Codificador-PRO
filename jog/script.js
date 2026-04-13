@@ -13,12 +13,12 @@ let traps = [];
 let isRunning = false;
 let shouldStopExecution = false;
 
-// ==================== NOVO: VIDAS E TIMER ==================== //
+// ==================== VIDAS E TIMER ==================== //
 let lives = 3;
 let timeLeft = 60;
 let timerInterval = null;
 
-const levelTimes = [60, 120, 180, 300]; // Fase 1: 1min, 2: 2min, 3: 3min, 4: 5min
+const levelTimes = [60, 120, 180, 300];
 
 function updateLivesUI() {
   document.getElementById('lives').innerHTML = '❤️'.repeat(lives) + '♡'.repeat(3 - lives);
@@ -33,7 +33,6 @@ function startTimer() {
   timerInterval = setInterval(() => {
     timeLeft--;
     document.getElementById('time-left').textContent = timeLeft;
-
     if (timeLeft <= 10) document.getElementById('timer').classList.add('low');
     if (timeLeft <= 0) {
       clearInterval(timerInterval);
@@ -42,32 +41,12 @@ function startTimer() {
   }, 1000);
 }
 
-function loseLife(msg = "Você perdeu uma vida!") {
-  clearInterval(timerInterval);
-  lives--;
-  updateLivesUI();
-
-  if (lives <= 0) {
-    alert("💀 GAME OVER\n\nVocê perdeu todas as 3 vidas!");
-    lives = 3;
-    currentLevelIndex = 0;
-    loadLevel(0);
-  } else {
-    alert(msg + `\n\nVidas restantes: ${lives}`);
-    resetNivel();
-  }
-}
-
 // ==================== PROGRESSO ==================== //
 let completedLevels = [];
 
 function loadProgress() {
   const saved = localStorage.getItem('robotCodificadorProgress');
-  if (saved) {
-    completedLevels = JSON.parse(saved);
-  } else {
-    completedLevels = [];
-  }
+  completedLevels = saved ? JSON.parse(saved) : [];
 }
 
 function saveProgress(levelNumber) {
@@ -84,14 +63,13 @@ function resetProgress() {
     localStorage.removeItem('robotCodificadorProgress');
     completedLevels = [];
     updateProgressBar();
-    loadLevel(0);
-    alert('✅ Progresso resetado! O jogo voltou ao início.');
+    loadLevel(0, true);
+    alert('✅ Progresso resetado!');
   }
 }
 
 function updateProgressBar() {
   const bar = document.getElementById('progress-bar');
-  if (!bar) return;
   bar.innerHTML = '';
   for (let i = 1; i <= 4; i++) {
     const dot = document.createElement('div');
@@ -101,7 +79,7 @@ function updateProgressBar() {
   }
 }
 
-// =============== NÍVEIS =============== //
+// =============== NÍVEIS (MAPA RESTAURADO) =============== //
 const levels = [
   {
     number: 1,
@@ -144,6 +122,28 @@ const levels = [
     solution: `Boa sorte meu consagrado... 🤖\n\nSegure na mão de Deus e vá na Fé!!`
   }
 ];
+
+// ==================== FUNÇÃO DE VITÓRIA ==================== //
+function checkVictory() {
+  if (chips.every(c => c.collected)) {
+    clearInterval(timerInterval);
+    const statusEl = document.getElementById('status');
+    statusEl.classList.add('success');
+    statusEl.innerHTML = `🎉 Nível ${levels[currentLevelIndex].number} concluído!`;
+
+    const btn = document.getElementById('btn-proximo');
+    if (currentLevelIndex === levels.length - 1) {
+      btn.style.display = 'none';
+      setTimeout(() => alert('🏆 PARABÉNS! Você completou TODOS os 4 níveis!'), 300);
+    } else {
+      btn.style.display = 'flex';
+    }
+    saveProgress(levels[currentLevelIndex].number);
+    shouldStopExecution = true;
+    return true;
+  }
+  return false;
+}
 
 // ==================== FUNÇÕES DE DESENHO ==================== //
 function roundRect(ctx, x, y, w, h, r) {
@@ -226,7 +226,7 @@ function drawRobot(px, py) {
 }
 
 function drawChip(x, y, index, time) { 
-  if (chips[index].collected) return;
+  if (chips[index] && chips[index].collected) return;
   const px = x * CELL + CELL / 2;
   const py = y * CELL + CELL / 2 + Math.sin(time * 3 + index) * 7;
   const rot = Math.sin(time * 2.5 + index * 1.3) * 6;
@@ -344,7 +344,7 @@ function draw() {
   drawRobot(robotPixel.x, robotPixel.y);
 }
 
-// ==================== MOVIMENTO E LÓGICA ==================== //
+// ==================== MOVIMENTO ==================== //
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 async function moveTo(newGridX, newGridY) {
@@ -391,21 +391,13 @@ async function moveTo(newGridX, newGridY) {
 
   const totalCollected = chips.filter(c => c.collected).length;
   if (totalCollected > 0) {
-    document.getElementById('status').innerHTML = `✅ Chipe coletado! (${totalCollected}/${chips.length})`;
+    const statusEl = document.getElementById('status');
+    statusEl.classList.remove('success', 'error');
+    statusEl.classList.add('success');
+    statusEl.innerHTML = `✅ Chipe coletado! (${totalCollected}/${chips.length})`;
   }
 
-  if (chips.every(c => c.collected)) {
-    const isLastLevel = currentLevelIndex === levels.length - 1;
-    document.getElementById('status').innerHTML = `🎉 Nível ${levels[currentLevelIndex].number} concluído!`;
-    const btn = document.getElementById('btn-proximo');
-    if (isLastLevel) {
-      btn.style.display = 'none';
-      setTimeout(() => alert('🏆 PARABÉNS! Você completou TODOS os 4 níveis!\n\nVocê é um mestre da programação! 🎉'), 300);
-    } else {
-      btn.style.display = 'flex';
-    }
-    saveProgress(levels[currentLevelIndex].number);
-  }
+  checkVictory();
 }
 
 // ==================== EXECUTAR CÓDIGO ==================== //
@@ -413,9 +405,11 @@ async function executarCodigo() {
   if (isRunning) return;
   isRunning = true;
   shouldStopExecution = false;
+
   const status = document.getElementById('status');
   const codeArea = document.getElementById('code');
 
+  status.classList.remove('success', 'error');
   status.innerHTML = '🚀 Executando código...';
   document.getElementById('btn-proximo').style.display = 'none';
 
@@ -427,6 +421,7 @@ async function executarCodigo() {
 
     const match = cmd.match(/^(\w+)\s*\(?\s*(\d*)\s*\)?$/);
     if (!match) {
+      status.classList.add('error');
       status.innerHTML = `❌ Comando inválido: <b>${cmd}</b>`;
       isRunning = false;
       return;
@@ -437,15 +432,25 @@ async function executarCodigo() {
     if (match[2] !== '') {
       quantidade = parseInt(match[2]);
       if (isNaN(quantidade) || quantidade < 1) {
+        status.classList.add('error');
         status.innerHTML = `❌ Quantidade inválida em: <b>${cmd}</b>`;
         isRunning = false;
         return;
       }
     }
 
+    const MAX_MOVES = 20;
+    if (quantidade > MAX_MOVES) {
+      status.innerHTML = `⚠️ Limite de ${MAX_MOVES} movimentos! (usando ${MAX_MOVES})`;
+      quantidade = MAX_MOVES;
+    }
+
     if (commandFunctions[commandName]) {
+      status.classList.remove('success', 'error');
+      status.innerHTML = `🔄 Executando: <b>${cmd}</b>`;
       await commandFunctions[commandName](quantidade);
     } else {
+      status.classList.add('error');
       status.innerHTML = `❌ Comando desconhecido: <b>${commandName}</b>`;
       isRunning = false;
       return;
@@ -460,42 +465,32 @@ async function executarCodigo() {
 
   isRunning = false;
 
-  if (chips.every(c => c.collected)) {
-    const isLastLevel = currentLevelIndex === levels.length - 1;
-    status.innerHTML = `🎉 Nível ${levels[currentLevelIndex].number} concluído!`;
-    const btn = document.getElementById('btn-proximo');
-    if (isLastLevel) {
-      btn.style.display = 'none';
-    } else {
-      btn.style.display = 'flex';
-    }
-  } else {
-    status.innerHTML = '✅ Código executado!';
+  if (!chips.every(c => c.collected)) {
+    status.classList.remove('success', 'error');
+    status.innerHTML = '✅ Código executado com sucesso!';
     codeArea.innerHTML = '';
   }
 }
 
+// ==================== COMANDOS ==================== //
 async function moverDireita(quantidade = 1) {
   for (let i = 0; i < quantidade; i++) {
     if (robot.gridX >= COLS - 1) break;
     await moveTo(robot.gridX + 1, robot.gridY);
   }
 }
-
 async function moverEsquerda(quantidade = 1) {
   for (let i = 0; i < quantidade; i++) {
     if (robot.gridX <= 0) break;
     await moveTo(robot.gridX - 1, robot.gridY);
   }
 }
-
 async function moverCima(quantidade = 1) {
   for (let i = 0; i < quantidade; i++) {
     if (robot.gridY <= 0) break;
     await moveTo(robot.gridX, robot.gridY - 1);
   }
 }
-
 async function moverBaixo(quantidade = 1) {
   for (let i = 0; i < quantidade; i++) {
     if (robot.gridY >= ROWS - 1) break;
@@ -510,45 +505,8 @@ const commandFunctions = {
   'moverBaixo': moverBaixo
 };
 
-// ==================== ATALHOS COM SETAS + SCROLL ==================== //
-const codeArea = document.getElementById('code');
-
-function scrollToBottom() {
-  codeArea.scrollTop = codeArea.scrollHeight;
-}
-
-codeArea.addEventListener('keydown', function(e) {
-  if (e.ctrlKey || e.shiftKey || e.altKey) return;
-
-  let comando = '';
-  switch (e.key) {
-    case 'ArrowRight': comando = 'moverDireita()'; break;
-    case 'ArrowLeft':  comando = 'moverEsquerda()'; break;
-    case 'ArrowUp':    comando = 'moverCima()'; break;
-    case 'ArrowDown':  comando = 'moverBaixo()'; break;
-    default: return;
-  }
-  e.preventDefault();
-  inserirNoCursor(comando + '\n');
-  scrollToBottom();
-});
-
-function inserirNoCursor(texto) {
-  const sel = window.getSelection();
-  if (!sel.rangeCount) return;
-  const range = sel.getRangeAt(0);
-  range.deleteContents();
-  const textNode = document.createTextNode(texto);
-  range.insertNode(textNode);
-  range.setStartAfter(textNode);
-  range.setEndAfter(textNode);
-  sel.removeAllRanges();
-  sel.addRange(range);
-  scrollToBottom();
-}
-
-// ==================== FUNÇÕES DO JOGO ==================== //
-function loadLevel(index) {
+// ==================== LOAD LEVEL ==================== //
+function loadLevel(index, showStartButton = true, keepTimerRunning = false) {
   currentLevelIndex = index;
   const level = levels[index];
 
@@ -564,34 +522,81 @@ function loadLevel(index) {
   document.getElementById('status').innerHTML = '';
   document.getElementById('btn-proximo').style.display = 'none';
 
+  document.getElementById('btn-start').style.display = showStartButton ? 'flex' : 'none';
+
+  // ==================== CORREÇÃO DO CRONÔMETRO ====================
+  if (showStartButton) {
+    // Quando voltamos para o botão "INICIAR" (reset manual, próximo nível, game over)
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+  } else {
+    // Reset por perda de vida → NÃO reseta o cronômetro
+    document.getElementById('status').innerHTML = '🎮 Fase reiniciada!';
+    if (!keepTimerRunning) {
+      startTimer();
+    }
+    // se keepTimerRunning = true → o timer continua rodando normalmente
+  }
+
   updateLivesUI();
+  draw();
+}
+
+// ==================== LOSE LIFE (RESET AUTOMÁTICO) ==================== //
+function loseLife(msg = "Você perdeu uma vida!") {
+  // REMOVIDO clearInterval aqui → o cronômetro agora continua!
+  lives--;
+  updateLivesUI();
+
+  if (lives <= 0) {
+    alert("💀 GAME OVER\n\nVocê perdeu todas as 3 vidas!\n\nVoltando para o nível atual com vidas novas.");
+    lives = 3;
+    updateLivesUI();
+    loadLevel(currentLevelIndex, true);           // mostra botão INICIAR e para o timer
+  } else {
+    const statusEl = document.getElementById('status');
+    statusEl.classList.add('error');
+    statusEl.innerHTML = `💥 ${msg} — Reiniciando automaticamente...`;
+
+    setTimeout(() => {
+      loadLevel(currentLevelIndex, false, true);  // ← CORREÇÃO: keepTimerRunning = true
+    }, 1200);
+  }
+}
+
+// ==================== START GAME ==================== //
+function startGame() {
+  document.getElementById('btn-start').style.display = 'none';
+  document.getElementById('status').innerHTML = '🎮 Fase iniciada! Boa sorte!';
   startTimer();
   draw();
 }
 
 function proximoNivel() {
   if (currentLevelIndex < levels.length - 1) {
-    loadLevel(currentLevelIndex + 1);
+    loadLevel(currentLevelIndex + 1, true);
   } else {
     alert('🎉 Parabéns! Você completou todos os 4 níveis!');
-    loadLevel(0);
+    loadLevel(0, true);
+  }
+}
+
+function resetNivel() {
+  if (confirm('🔄 Tem certeza que deseja reiniciar o nível?\n\nO código atual será apagado.')) {
+    loadLevel(currentLevelIndex, true);
   }
 }
 
 function mostrarDica() {
-  alert('💡 Dica: Planeje o caminho antes de executar. Evite chips vermelhos e buracos!');
+  alert('💡 Dica: Planeje o caminho antes de executar. Evite chips corrompidos e buracos!');
 }
 
 function mostrarSolucao() {
   const level = levels[currentLevelIndex];
   document.getElementById('code').innerText = level.solution;
-  document.getElementById('status').innerHTML = currentLevelIndex === 3 
-    ? '💡 Mensagem carregada!' 
-    : '📋 Solução carregada!';
-}
-
-function resetNivel() {
-  loadLevel(currentLevelIndex);
+  document.getElementById('status').innerHTML = currentLevelIndex === 3 ? '💡 Mensagem carregada!' : '📋 Solução carregada!';
 }
 
 function mostrarDocs() {
@@ -602,11 +607,38 @@ function fecharModal() {
   document.getElementById('modal-docs').style.display = 'none';
 }
 
+// ==================== SETAS DO TECLADO ==================== //
+document.addEventListener('keydown', function(e) {
+  if (isRunning) return;
+  const codeArea = document.getElementById('code');
+  if (document.activeElement !== codeArea) return;
+
+  let command = '';
+  switch (e.key) {
+    case 'ArrowUp':    command = 'moverCima()'; break;
+    case 'ArrowDown':  command = 'moverBaixo()'; break;
+    case 'ArrowLeft':  command = 'moverEsquerda()'; break;
+    case 'ArrowRight': command = 'moverDireita()'; break;
+    default: return;
+  }
+  e.preventDefault();
+
+  const currentText = codeArea.innerText.trim();
+  codeArea.innerText = currentText ? currentText + '\n' + command : command;
+
+  const range = document.createRange();
+  const sel = window.getSelection();
+  range.selectNodeContents(codeArea);
+  range.collapse(false);
+  sel.removeAllRanges();
+  sel.addRange(range);
+});
+
 // ==================== INICIAR O JOGO ==================== //
 loadProgress();
 const maxCompleted = completedLevels.length ? Math.max(...completedLevels) : 0;
 const startIndex = Math.min(maxCompleted, levels.length - 1);
-loadLevel(startIndex);
+loadLevel(startIndex, true);
 
 setInterval(() => {
   if (!isRunning) draw();
