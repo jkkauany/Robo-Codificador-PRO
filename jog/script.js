@@ -505,14 +505,13 @@ const commandFunctions = {
   'moverBaixo': moverBaixo
 };
 
-// ==================== LOAD LEVEL (AGORA COM RESET DE VIDAS) ==================== //
+// ==================== LOAD LEVEL ==================== //
 function loadLevel(index, showStartButton = true, keepTimerRunning = false) {
   currentLevelIndex = index;
   const level = levels[index];
 
-  // ==================== RESET DE VIDAS ====================
   if (showStartButton) {
-    lives = 3;                    // ← Nova linha: sempre 3 vidas ao iniciar fase
+    lives = 3;
     updateLivesUI();
   }
 
@@ -540,8 +539,6 @@ function loadLevel(index, showStartButton = true, keepTimerRunning = false) {
     codeArea.style.cursor = 'text';
   }
 
-  // ==================== CONTROLE DO BOTÃO SOLUÇÃO ====================
-  // Esconde o botão de solução antes de iniciar (igual ao bloqueio da caixa de código)
   document.getElementById('btn-start').style.display = showStartButton ? 'flex' : 'none';
   document.getElementById('btn-solucao').style.display = showStartButton ? 'none' : 'flex';
 
@@ -588,7 +585,7 @@ function startGame() {
   codeArea.style.cursor = 'text';
 
   document.getElementById('btn-start').style.display = 'none';
-  document.getElementById('btn-solucao').style.display = 'flex';   // ← Mostra o botão de solução ao iniciar
+  document.getElementById('btn-solucao').style.display = 'flex';
 
   document.getElementById('status').innerHTML = '🎮 Fase iniciada! Boa sorte!';
   startTimer();
@@ -614,10 +611,28 @@ function mostrarDica() {
   alert('💡 Dica: Planeje o caminho antes de executar. Evite chips corrompidos e buracos!');
 }
 
+// ==================== NOVA FUNÇÃO SOLUÇÃO (TOGGLE) ==================== //
 function mostrarSolucao() {
+  const codeArea = document.getElementById('code');
   const level = levels[currentLevelIndex];
-  document.getElementById('code').innerText = level.solution;
-  document.getElementById('status').innerHTML = currentLevelIndex === 3 ? '💡 Mensagem carregada!' : '📋 Solução carregada!';
+  const currentCode = codeArea.innerText.trim();
+  const solutionCode = level.solution.trim();
+
+  const statusEl = document.getElementById('status');
+
+  if (currentCode === solutionCode) {
+    // Já está mostrando a solução → remove
+    codeArea.innerText = '';
+    statusEl.classList.remove('success', 'error');
+    statusEl.innerHTML = '✅ Solução removida!';
+  } else {
+    // Mostra a solução
+    codeArea.innerText = level.solution;
+    statusEl.classList.remove('success', 'error');
+    statusEl.innerHTML = currentLevelIndex === 3 
+      ? '💡 Mensagem carregada!' 
+      : '📋 Solução carregada!';
+  }
 }
 
 function mostrarDocs() {
