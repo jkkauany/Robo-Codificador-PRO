@@ -505,7 +505,7 @@ const commandFunctions = {
   'moverBaixo': moverBaixo
 };
 
-// ==================== LOAD LEVEL ==================== //
+// ==================== LOAD LEVEL (COM BLOQUEIO) ==================== //
 function loadLevel(index, showStartButton = true, keepTimerRunning = false) {
   currentLevelIndex = index;
   const level = levels[index];
@@ -518,35 +518,41 @@ function loadLevel(index, showStartButton = true, keepTimerRunning = false) {
   traps = level.traps ? [...level.traps] : [];
 
   document.getElementById('level-title').innerText = level.title;
-  document.getElementById('code').innerHTML = '';
   document.getElementById('status').innerHTML = '';
   document.getElementById('btn-proximo').style.display = 'none';
 
+  const codeArea = document.getElementById('code');
+  codeArea.innerHTML = '';
+
+  // BLOQUEIA a caixa antes de iniciar
+  if (showStartButton) {
+    codeArea.contentEditable = 'false';
+    codeArea.style.opacity = '0.5';
+    codeArea.style.cursor = 'not-allowed';
+  } else {
+    codeArea.contentEditable = 'true';
+    codeArea.style.opacity = '1';
+    codeArea.style.cursor = 'text';
+  }
+
   document.getElementById('btn-start').style.display = showStartButton ? 'flex' : 'none';
 
-  // ==================== CORREÇÃO DO CRONÔMETRO ====================
   if (showStartButton) {
-    // Quando voltamos para o botão "INICIAR" (reset manual, próximo nível, game over)
     if (timerInterval) {
       clearInterval(timerInterval);
       timerInterval = null;
     }
   } else {
-    // Reset por perda de vida → NÃO reseta o cronômetro
     document.getElementById('status').innerHTML = '🎮 Fase reiniciada!';
-    if (!keepTimerRunning) {
-      startTimer();
-    }
-    // se keepTimerRunning = true → o timer continua rodando normalmente
+    if (!keepTimerRunning) startTimer();
   }
 
   updateLivesUI();
   draw();
 }
 
-// ==================== LOSE LIFE (RESET AUTOMÁTICO) ==================== //
+// ==================== LOSE LIFE ==================== //
 function loseLife(msg = "Você perdeu uma vida!") {
-  // REMOVIDO clearInterval aqui → o cronômetro agora continua!
   lives--;
   updateLivesUI();
 
@@ -554,20 +560,25 @@ function loseLife(msg = "Você perdeu uma vida!") {
     alert("💀 GAME OVER\n\nVocê perdeu todas as 3 vidas!\n\nVoltando para o nível atual com vidas novas.");
     lives = 3;
     updateLivesUI();
-    loadLevel(currentLevelIndex, true);           // mostra botão INICIAR e para o timer
+    loadLevel(currentLevelIndex, true);
   } else {
     const statusEl = document.getElementById('status');
     statusEl.classList.add('error');
     statusEl.innerHTML = `💥 ${msg} — Reiniciando automaticamente...`;
 
     setTimeout(() => {
-      loadLevel(currentLevelIndex, false, true);  // ← CORREÇÃO: keepTimerRunning = true
+      loadLevel(currentLevelIndex, false, true);  // mantém o timer
     }, 1200);
   }
 }
 
 // ==================== START GAME ==================== //
 function startGame() {
+  const codeArea = document.getElementById('code');
+  codeArea.contentEditable = 'true';
+  codeArea.style.opacity = '1';
+  codeArea.style.cursor = 'text';
+
   document.getElementById('btn-start').style.display = 'none';
   document.getElementById('status').innerHTML = '🎮 Fase iniciada! Boa sorte!';
   startTimer();
@@ -607,10 +618,12 @@ function fecharModal() {
   document.getElementById('modal-docs').style.display = 'none';
 }
 
-// ==================== SETAS DO TECLADO ==================== //
+// ==================== TECLADO ==================== //
 document.addEventListener('keydown', function(e) {
-  if (isRunning) return;
   const codeArea = document.getElementById('code');
+  if (codeArea.contentEditable === 'false') return;
+
+  if (isRunning) return;
   if (document.activeElement !== codeArea) return;
 
   let command = '';
