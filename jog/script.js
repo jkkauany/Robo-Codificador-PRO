@@ -20,6 +20,13 @@ let timerInterval = null;
 
 const levelTimes = [60, 120, 180, 300];
 
+let penaltyTime = 0;
+let levelStartTime = 0;
+
+let completedLevels = [];
+let levelStars = {};
+let usedSolution = false;
+
 function updateLivesUI() {
   document.getElementById('lives').innerHTML = '❤️'.repeat(lives) + '♡'.repeat(3 - lives);
 }
@@ -41,20 +48,63 @@ function startTimer() {
   }, 1000);
 }
 
+function updateLivesUI() {
+  document.getElementById('lives').innerHTML = '❤️'.repeat(lives) + '♡'.repeat(3 - lives);
+}
+
+function startTimer() {
+  if (timerInterval) clearInterval(timerInterval);
+  
+  timeLeft = levelTimes[currentLevelIndex];
+  penaltyTime = 0;                    // ← Reset da penalidade ao iniciar normalmente
+  levelStartTime = Date.now();        // ← Marca o momento que começou a fase
+
+  document.getElementById('time-left').textContent = timeLeft;
+  document.getElementById('timer').classList.remove('low');
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    document.getElementById('time-left').textContent = timeLeft;
+    if (timeLeft <= 10) document.getElementById('timer').classList.add('low');
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      loseLife("⏰ Tempo esgotado!");
+    }
+  }, 1000);
+}
+
 // ==================== PROGRESSO ==================== //
-let completedLevels = [];
+
 
 function loadProgress() {
   const saved = localStorage.getItem('robotCodificadorProgress');
-  completedLevels = saved ? JSON.parse(saved) : [];
+  if (saved) {
+    const data = JSON.parse(saved);
+    // compatibilidade com saves antigos (só array)
+    completedLevels = Array.isArray(data) ? data : (data.completed || []);
+    levelStars = data.stars || {};
+  } else {
+    completedLevels = [];
+    levelStars = {};
+  }
 }
 
-function saveProgress(levelNumber) {
+function saveProgress(levelNumber, earnedStars) {
   if (!completedLevels.includes(levelNumber)) {
     completedLevels.push(levelNumber);
     completedLevels.sort((a, b) => a - b);
-    localStorage.setItem('robotCodificadorProgress', JSON.stringify(completedLevels));
   }
+
+  // guarda o melhor resultado (se melhorar o tempo, atualiza as estrelas)
+  if (!levelStars[levelNumber] || earnedStars > levelStars[levelNumber]) {
+    levelStars[levelNumber] = earnedStars;
+  }
+
+  localStorage.setItem('robotCodificadorProgress', JSON.stringify({
+    completed: completedLevels,
+    stars: levelStars
+  }));
+
   updateProgressBar();
 }
 
@@ -62,6 +112,7 @@ function resetProgress() {
   if (confirm('🗑️ Deseja apagar TODO o progresso e começar do zero?')) {
     localStorage.removeItem('robotCodificadorProgress');
     completedLevels = [];
+    levelStars = {};           // ← reset das estrelas
     updateProgressBar();
     loadLevel(0, true);
     alert('✅ Progresso resetado!');
@@ -74,7 +125,10 @@ function updateProgressBar() {
   for (let i = 1; i <= 4; i++) {
     const dot = document.createElement('div');
     dot.className = `level-dot ${completedLevels.includes(i) ? 'completed' : ''}`;
-    dot.textContent = i;
+
+    const stars = levelStars[i] ? '⭐'.repeat(levelStars[i]) : '';
+    dot.innerHTML = `${i}<span class="stars">${stars}</span>`;
+
     bar.appendChild(dot);
   }
 }
@@ -127,23 +181,136 @@ const levels = [
 function checkVictory() {
   if (chips.every(c => c.collected)) {
     clearInterval(timerInterval);
+
+    const levelNum = levels[currentLevelIndex].number;
+    const maxTime = levelTimes[currentLevelIndex];
+    
+    // Tempo REAL gasto + penalidade por mortes
+    const realTimeSpent = Math.floor((Date.now() - levelStartTime) / 1000);
+    const totalTimeSpent = realTimeSpent + penaltyTime;
+
+    // Cálculo das estrelas com o tempo penalizado
+    const threshold3 = Math.floor(maxTime / 3);
+    const threshold2 = Math.floor(maxTime / 2);
+
+    let earnedStars = 1;
+    if (totalTimeSpent < threshold3) earnedStars = 3;
+    else if (totalTimeSpent < threshold2) earnedStars = 2;
+
+    saveProgress(levelNum, earnedStars);
+
     const statusEl = document.getElementById('status');
     statusEl.classList.add('success');
-    statusEl.innerHTML = `🎉 Nível ${levels[currentLevelIndex].number} concluído!`;
+    statusEl.innerHTML = `
+      🎉 Nível ${levelNum} concluído!<br>
+      <span style="font-size:28px">${'⭐'.repeat(earnedStars)}</span><br>
+      <small>Tempo: ${totalTimeSpent}s ${penaltyTime > 0 ? `(+${penaltyTime}s penalidade)` : ''}</small>
+    `;
 
     const btn = document.getElementById('btn-proximo');
     if (currentLevelIndex === levels.length - 1) {
       btn.style.display = 'none';
-      setTimeout(() => alert('🏆 PARABÉNS! Você completou TODOS os 4 níveis!'), 300);
+      // Mostra a tela final em vez do alert simples
+      setTimeout(() => {
+        mostrarTelaFinal();
+      }, 800);
     } else {
       btn.style.display = 'flex';
     }
-    saveProgress(levels[currentLevelIndex].number);
+
     shouldStopExecution = true;
     return true;
   }
   return false;
+
+  
 }
+// ==================== TELA FINAL - DESEMPENHO GERAL ==================== //
+// ==================== TELA FINAL - DESEMPENHO GERAL (VERSÃO CORRIGIDA) ==================== //
+// ==================== TELA FINAL - DESEMPENHO GERAL ==================== //
+function mostrarTelaFinal() {
+  let totalStars = Object.values(levelStars).reduce((a, b) => a + b, 0);
+  const maxPossible = 12;
+
+  // Penalidade por usar solução
+  let solutionPenaltyText = "";
+  if (usedSolution) {
+    totalStars = Math.max(0, totalStars - 2); // tira 2 estrelas do total final
+    solutionPenaltyText = `<p style="color:#f87171; margin:15px 0; font-size:17px;">⚠️ -2 estrelas de penalidade por usar a solução</p>`;
+  }
+
+  let rating = "";
+  let emoji = "";
+  let color = "";
+
+  if (totalStars === 12) {
+    rating = "🏆 Desempenho PERFEITO! Você é um mestre!";
+    emoji = "🌟";
+    color = "#facc15";
+  } else if (totalStars >= 10) {
+    rating = "🎖️ Excelente desempenho!";
+    emoji = "🔥";
+    color = "#22c55e";
+  } else if (totalStars >= 7) {
+    rating = "👍 Bom trabalho!";
+    emoji = "✅";
+    color = "#eab308";
+  } else if (totalStars >= 4) {
+    rating = "🙂 Você completou o jogo!";
+    emoji = "👏";
+    color = "#3b82f6";
+  } else {
+    rating = "Continue treinando! Você consegue melhorar.";
+    emoji = "💪";
+    color = "#ef4444";
+  }
+
+  let finalHTML = `
+    <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.88); display:flex; align-items:center; justify-content:center; z-index:9999; font-family: system-ui, sans-serif;">
+      <div style="background:#1e2937; color:white; padding:40px 35px; border-radius:20px; max-width:480px; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.7);">
+        
+        <h1 style="font-size:42px; margin:0 0 8px 0;">🏆 PARABÉNS!</h1>
+        <p style="font-size:20px; margin:0 0 25px 0; opacity:0.9;">Você completou todos os 4 níveis</p>
+        
+        <div style="font-size:68px; font-weight:bold; margin:15px 0 8px 0; color:${color}; line-height:1;">
+          ${totalStars}<span style="font-size:32px; opacity:0.6;">/${maxPossible}</span>
+        </div>
+        <p style="margin:0 0 20px 0; font-size:18px; color:#94a3b8;">estrelas conquistadas</p>
+        
+        ${solutionPenaltyText}
+        
+        <p style="font-size:23px; margin:20px 0 30px 0;">${emoji} ${rating}</p>
+        
+        <div style="background:#0f172a; padding:18px; border-radius:12px; margin:25px 0; text-align:left; font-size:16px;">
+          <strong style="color:#cbd5e1;">Desempenho por fase:</strong><br><br>
+          Nível 1 — ${'⭐'.repeat(levelStars[1] || 0)}<br>
+          Nível 2 — ${'⭐'.repeat(levelStars[2] || 0)}<br>
+          Nível 3 — ${'⭐'.repeat(levelStars[3] || 0)}<br>
+          Nível 4 — ${'⭐'.repeat(levelStars[4] || 0)}
+        </div>
+
+        <button onclick="reiniciarTudo()" 
+                style="background:#22c55e; color:#0f172a; border:none; padding:16px 40px; font-size:18px; font-weight:bold; border-radius:12px; cursor:pointer; margin-top:15px;">
+          Jogar Novamente
+        </button>
+      </div>
+    </div>
+  `;
+
+  const finalScreen = document.createElement('div');
+  finalScreen.id = "final-screen";
+  finalScreen.innerHTML = finalHTML;
+  document.body.appendChild(finalScreen);
+}
+
+// Função para reiniciar tudo (chamada pelo botão)
+function reiniciarTudo() {
+  if (document.getElementById("final-screen")) {
+    document.getElementById("final-screen").remove();
+  }
+  resetProgress(); // ou loadLevel(0, true) se preferir só voltar sem apagar save
+}
+
 
 // ==================== FUNÇÕES DE DESENHO ==================== //
 function roundRect(ctx, x, y, w, h, r) {
@@ -561,18 +728,21 @@ function loseLife(msg = "Você perdeu uma vida!") {
   lives--;
   updateLivesUI();
 
+  // === PENALIDADE DE TEMPO ===
+  penaltyTime += 30;   // ← Cada morte adiciona 30 segundos no tempo final
+
   if (lives <= 0) {
     alert("💀 GAME OVER\n\nVocê perdeu todas as 3 vidas!\n\nVoltando para o nível atual com vidas novas.");
     lives = 3;
     updateLivesUI();
-    loadLevel(currentLevelIndex, true);
+    loadLevel(currentLevelIndex, true);   // reinicia completamente
   } else {
     const statusEl = document.getElementById('status');
     statusEl.classList.add('error');
-    statusEl.innerHTML = `💥 ${msg} — Reiniciando automaticamente...`;
+    statusEl.innerHTML = `💥 ${msg} — Reiniciando automaticamente... (+30s de penalidade)`;
 
     setTimeout(() => {
-      loadLevel(currentLevelIndex, false, true);
+      loadLevel(currentLevelIndex, false, true);  // mantém o timer rodando
     }, 1200);
   }
 }
@@ -612,6 +782,7 @@ function mostrarDica() {
 }
 
 // ==================== NOVA FUNÇÃO SOLUÇÃO (TOGGLE) ==================== //
+// ==================== MOSTRAR SOLUÇÃO (com detecção) ==================== //
 function mostrarSolucao() {
   const codeArea = document.getElementById('code');
   const level = levels[currentLevelIndex];
@@ -621,17 +792,23 @@ function mostrarSolucao() {
   const statusEl = document.getElementById('status');
 
   if (currentCode === solutionCode) {
-    // Já está mostrando a solução → remove
+    // Remove a solução
     codeArea.innerText = '';
     statusEl.classList.remove('success', 'error');
     statusEl.innerHTML = '✅ Solução removida!';
   } else {
-    // Mostra a solução
+    // Mostra a solução → marca como usado
     codeArea.innerText = level.solution;
     statusEl.classList.remove('success', 'error');
     statusEl.innerHTML = currentLevelIndex === 3 
       ? '💡 Mensagem carregada!' 
       : '📋 Solução carregada!';
+
+    // === MARCA QUE USOU A SOLUÇÃO ===
+    if (!usedSolution) {
+      usedSolution = true;
+      console.log("✅ Solução foi usada em algum nível");
+    }
   }
 }
 

@@ -210,3 +210,17 @@ canvas {
   button { flex: 1 1 100%; }
   .controls { flex-direction: column; }
 }
+.level-dot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1;
+  }
+  .level-dot .stars {
+    font-size: 16px;
+    letter-spacing: 1px;
+  }
