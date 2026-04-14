@@ -33,31 +33,10 @@ function updateLivesUI() {
 
 function startTimer() {
   if (timerInterval) clearInterval(timerInterval);
-  timeLeft = levelTimes[currentLevelIndex];
-  document.getElementById('time-left').textContent = timeLeft;
-  document.getElementById('timer').classList.remove('low');
-
-  timerInterval = setInterval(() => {
-    timeLeft--;
-    document.getElementById('time-left').textContent = timeLeft;
-    if (timeLeft <= 10) document.getElementById('timer').classList.add('low');
-    if (timeLeft <= 0) {
-      clearInterval(timerInterval);
-      loseLife("⏰ Tempo esgotado!");
-    }
-  }, 1000);
-}
-
-function updateLivesUI() {
-  document.getElementById('lives').innerHTML = '❤️'.repeat(lives) + '♡'.repeat(3 - lives);
-}
-
-function startTimer() {
-  if (timerInterval) clearInterval(timerInterval);
   
   timeLeft = levelTimes[currentLevelIndex];
-  penaltyTime = 0;                    // ← Reset da penalidade ao iniciar normalmente
-  levelStartTime = Date.now();        // ← Marca o momento que começou a fase
+  penaltyTime = 0;
+  levelStartTime = Date.now();
 
   document.getElementById('time-left').textContent = timeLeft;
   document.getElementById('timer').classList.remove('low');
@@ -74,13 +53,10 @@ function startTimer() {
 }
 
 // ==================== PROGRESSO ==================== //
-
-
 function loadProgress() {
   const saved = localStorage.getItem('robotCodificadorProgress');
   if (saved) {
     const data = JSON.parse(saved);
-    // compatibilidade com saves antigos (só array)
     completedLevels = Array.isArray(data) ? data : (data.completed || []);
     levelStars = data.stars || {};
   } else {
@@ -95,7 +71,6 @@ function saveProgress(levelNumber, earnedStars) {
     completedLevels.sort((a, b) => a - b);
   }
 
-  // guarda o melhor resultado (se melhorar o tempo, atualiza as estrelas)
   if (!levelStars[levelNumber] || earnedStars > levelStars[levelNumber]) {
     levelStars[levelNumber] = earnedStars;
   }
@@ -112,7 +87,7 @@ function resetProgress() {
   if (confirm('🗑️ Deseja apagar TODO o progresso e começar do zero?')) {
     localStorage.removeItem('robotCodificadorProgress');
     completedLevels = [];
-    levelStars = {};           // ← reset das estrelas
+    levelStars = {};
     updateProgressBar();
     loadLevel(0, true);
     alert('✅ Progresso resetado!');
@@ -125,10 +100,8 @@ function updateProgressBar() {
   for (let i = 1; i <= 4; i++) {
     const dot = document.createElement('div');
     dot.className = `level-dot ${completedLevels.includes(i) ? 'completed' : ''}`;
-
     const stars = levelStars[i] ? '⭐'.repeat(levelStars[i]) : '';
     dot.innerHTML = `${i}<span class="stars">${stars}</span>`;
-
     bar.appendChild(dot);
   }
 }
@@ -184,12 +157,9 @@ function checkVictory() {
 
     const levelNum = levels[currentLevelIndex].number;
     const maxTime = levelTimes[currentLevelIndex];
-    
-    // Tempo REAL gasto + penalidade por mortes
     const realTimeSpent = Math.floor((Date.now() - levelStartTime) / 1000);
     const totalTimeSpent = realTimeSpent + penaltyTime;
 
-    // Cálculo das estrelas com o tempo penalizado
     const threshold3 = Math.floor(maxTime / 3);
     const threshold2 = Math.floor(maxTime / 2);
 
@@ -210,10 +180,7 @@ function checkVictory() {
     const btn = document.getElementById('btn-proximo');
     if (currentLevelIndex === levels.length - 1) {
       btn.style.display = 'none';
-      // Mostra a tela final em vez do alert simples
-      setTimeout(() => {
-        mostrarTelaFinal();
-      }, 800);
+      setTimeout(() => mostrarTelaFinal(), 800);
     } else {
       btn.style.display = 'flex';
     }
@@ -222,65 +189,37 @@ function checkVictory() {
     return true;
   }
   return false;
-
-  
 }
-// ==================== TELA FINAL - DESEMPENHO GERAL ==================== //
-// ==================== TELA FINAL - DESEMPENHO GERAL (VERSÃO CORRIGIDA) ==================== //
-// ==================== TELA FINAL - DESEMPENHO GERAL ==================== //
+
+// ==================== TELA FINAL ==================== //
 function mostrarTelaFinal() {
   let totalStars = Object.values(levelStars).reduce((a, b) => a + b, 0);
   const maxPossible = 12;
 
-  // Penalidade por usar solução
   let solutionPenaltyText = "";
   if (usedSolution) {
-    totalStars = Math.max(0, totalStars - 2); // tira 2 estrelas do total final
+    totalStars = Math.max(0, totalStars - 2);
     solutionPenaltyText = `<p style="color:#f87171; margin:15px 0; font-size:17px;">⚠️ -2 estrelas de penalidade por usar a solução</p>`;
   }
 
-  let rating = "";
-  let emoji = "";
-  let color = "";
-
-  if (totalStars === 12) {
-    rating = "🏆 Desempenho PERFEITO! Você é um mestre!";
-    emoji = "🌟";
-    color = "#facc15";
-  } else if (totalStars >= 10) {
-    rating = "🎖️ Excelente desempenho!";
-    emoji = "🔥";
-    color = "#22c55e";
-  } else if (totalStars >= 7) {
-    rating = "👍 Bom trabalho!";
-    emoji = "✅";
-    color = "#eab308";
-  } else if (totalStars >= 4) {
-    rating = "🙂 Você completou o jogo!";
-    emoji = "👏";
-    color = "#3b82f6";
-  } else {
-    rating = "Continue treinando! Você consegue melhorar.";
-    emoji = "💪";
-    color = "#ef4444";
-  }
+  let rating = "", emoji = "", color = "";
+  if (totalStars === 12) { rating = "🏆 Desempenho PERFEITO! Você é um mestre!"; emoji = "🌟"; color = "#facc15"; }
+  else if (totalStars >= 10) { rating = "🎖️ Excelente desempenho!"; emoji = "🔥"; color = "#22c55e"; }
+  else if (totalStars >= 7) { rating = "👍 Bom trabalho!"; emoji = "✅"; color = "#eab308"; }
+  else if (totalStars >= 4) { rating = "🙂 Você completou o jogo!"; emoji = "👏"; color = "#3b82f6"; }
+  else { rating = "Continue treinando! Você consegue melhorar."; emoji = "💪"; color = "#ef4444"; }
 
   let finalHTML = `
     <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.88); display:flex; align-items:center; justify-content:center; z-index:9999; font-family: system-ui, sans-serif;">
       <div style="background:#1e2937; color:white; padding:40px 35px; border-radius:20px; max-width:480px; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.7);">
-        
         <h1 style="font-size:42px; margin:0 0 8px 0;">🏆 PARABÉNS!</h1>
         <p style="font-size:20px; margin:0 0 25px 0; opacity:0.9;">Você completou todos os 4 níveis</p>
-        
         <div style="font-size:68px; font-weight:bold; margin:15px 0 8px 0; color:${color}; line-height:1;">
           ${totalStars}<span style="font-size:32px; opacity:0.6;">/${maxPossible}</span>
         </div>
         <p style="margin:0 0 20px 0; font-size:18px; color:#94a3b8;">estrelas conquistadas</p>
-        
         ${solutionPenaltyText}
-        
         <p style="font-size:23px; margin:20px 0 30px 0;">${emoji} ${rating}</p>
-        
         <div style="background:#0f172a; padding:18px; border-radius:12px; margin:25px 0; text-align:left; font-size:16px;">
           <strong style="color:#cbd5e1;">Desempenho por fase:</strong><br><br>
           Nível 1 — ${'⭐'.repeat(levelStars[1] || 0)}<br>
@@ -288,9 +227,7 @@ function mostrarTelaFinal() {
           Nível 3 — ${'⭐'.repeat(levelStars[3] || 0)}<br>
           Nível 4 — ${'⭐'.repeat(levelStars[4] || 0)}
         </div>
-
-        <button onclick="reiniciarTudo()" 
-                style="background:#22c55e; color:#0f172a; border:none; padding:16px 40px; font-size:18px; font-weight:bold; border-radius:12px; cursor:pointer; margin-top:15px;">
+        <button onclick="reiniciarTudo()" style="background:#22c55e; color:#0f172a; border:none; padding:16px 40px; font-size:18px; font-weight:bold; border-radius:12px; cursor:pointer; margin-top:15px;">
           Jogar Novamente
         </button>
       </div>
@@ -303,14 +240,45 @@ function mostrarTelaFinal() {
   document.body.appendChild(finalScreen);
 }
 
-// Função para reiniciar tudo (chamada pelo botão)
 function reiniciarTudo() {
-  if (document.getElementById("final-screen")) {
-    document.getElementById("final-screen").remove();
-  }
-  resetProgress(); // ou loadLevel(0, true) se preferir só voltar sem apagar save
+  if (document.getElementById("final-screen")) document.getElementById("final-screen").remove();
+  resetProgress();
 }
 
+// ====================== TRANSIÇÃO ENTRE NÍVEIS ======================
+function showLevelTransition(nextIndex) {
+  const currentNum = levels[currentLevelIndex].number;
+  const nextNum = levels[nextIndex].number;
+
+  document.getElementById('current-level-num').textContent = currentNum;
+  document.getElementById('next-level-num').textContent = nextNum;
+
+  const starsEl = document.getElementById('transition-stars');
+  const earnedStars = levelStars[currentNum] || 0;
+  starsEl.innerHTML = '⭐'.repeat(earnedStars) + '☆'.repeat(3 - earnedStars);
+
+  const transitionScreen = document.getElementById('level-transition-screen');
+  transitionScreen.style.display = 'flex';
+
+  const progressBar = document.querySelector('.loading-progress');
+  progressBar.style.animation = 'none';
+  void progressBar.offsetWidth;
+  progressBar.style.animation = 'loadingAnim 1.8s ease-in-out forwards';
+
+  setTimeout(() => {
+    transitionScreen.style.display = 'none';
+    loadLevel(nextIndex, true);
+  }, 2250);
+}
+
+function proximoNivel() {
+  const nextIndex = currentLevelIndex + 1;
+  if (nextIndex >= levels.length) {
+    alert('🎉 Você completou todos os níveis!');
+    return;
+  }
+  showLevelTransition(nextIndex);
+}
 
 // ==================== FUNÇÕES DE DESENHO ==================== //
 function roundRect(ctx, x, y, w, h, r) {
@@ -727,22 +695,20 @@ function loadLevel(index, showStartButton = true, keepTimerRunning = false) {
 function loseLife(msg = "Você perdeu uma vida!") {
   lives--;
   updateLivesUI();
-
-  // === PENALIDADE DE TEMPO ===
-  penaltyTime += 30;   // ← Cada morte adiciona 30 segundos no tempo final
+  penaltyTime += 30;
 
   if (lives <= 0) {
     alert("💀 GAME OVER\n\nVocê perdeu todas as 3 vidas!\n\nVoltando para o nível atual com vidas novas.");
     lives = 3;
     updateLivesUI();
-    loadLevel(currentLevelIndex, true);   // reinicia completamente
+    loadLevel(currentLevelIndex, true);
   } else {
     const statusEl = document.getElementById('status');
     statusEl.classList.add('error');
     statusEl.innerHTML = `💥 ${msg} — Reiniciando automaticamente... (+30s de penalidade)`;
 
     setTimeout(() => {
-      loadLevel(currentLevelIndex, false, true);  // mantém o timer rodando
+      loadLevel(currentLevelIndex, false, true);
     }, 1200);
   }
 }
@@ -762,15 +728,6 @@ function startGame() {
   draw();
 }
 
-function proximoNivel() {
-  if (currentLevelIndex < levels.length - 1) {
-    loadLevel(currentLevelIndex + 1, true);
-  } else {
-    alert('🎉 Parabéns! Você completou todos os 4 níveis!');
-    loadLevel(0, true);
-  }
-}
-
 function resetNivel() {
   if (confirm('🔄 Tem certeza que deseja reiniciar o nível?\n\nO código atual será apagado.')) {
     loadLevel(currentLevelIndex, true);
@@ -781,8 +738,6 @@ function mostrarDica() {
   alert('💡 Dica: Planeje o caminho antes de executar. Evite chips corrompidos e buracos!');
 }
 
-// ==================== NOVA FUNÇÃO SOLUÇÃO (TOGGLE) ==================== //
-// ==================== MOSTRAR SOLUÇÃO (com detecção) ==================== //
 function mostrarSolucao() {
   const codeArea = document.getElementById('code');
   const level = levels[currentLevelIndex];
@@ -792,23 +747,15 @@ function mostrarSolucao() {
   const statusEl = document.getElementById('status');
 
   if (currentCode === solutionCode) {
-    // Remove a solução
     codeArea.innerText = '';
     statusEl.classList.remove('success', 'error');
     statusEl.innerHTML = '✅ Solução removida!';
   } else {
-    // Mostra a solução → marca como usado
     codeArea.innerText = level.solution;
     statusEl.classList.remove('success', 'error');
-    statusEl.innerHTML = currentLevelIndex === 3 
-      ? '💡 Mensagem carregada!' 
-      : '📋 Solução carregada!';
+    statusEl.innerHTML = currentLevelIndex === 3 ? '💡 Mensagem carregada!' : '📋 Solução carregada!';
 
-    // === MARCA QUE USOU A SOLUÇÃO ===
-    if (!usedSolution) {
-      usedSolution = true;
-      console.log("✅ Solução foi usada em algum nível");
-    }
+    if (!usedSolution) usedSolution = true;
   }
 }
 
@@ -824,7 +771,6 @@ function fecharModal() {
 document.addEventListener('keydown', function(e) {
   const codeArea = document.getElementById('code');
   if (codeArea.contentEditable === 'false') return;
-
   if (isRunning) return;
   if (document.activeElement !== codeArea) return;
 
