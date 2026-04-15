@@ -28,9 +28,7 @@ let levelStartTime = 0;
 let completedLevels = [];
 let levelStars = {};
 let usedSolution = false;
-
-// ✅ NOVA VARIÁVEL (para voltar do tutorial para o menu)
-let fromMenu = false;
+let fromMenu = false;                    // ← para o tutorial voltar ao menu
 
 function updateLivesUI() {
   document.getElementById('lives').innerHTML = '❤️'.repeat(lives) + '♡'.repeat(3 - lives);
@@ -216,21 +214,16 @@ function resetProgressFromMenu() {
   }
 }
 
-// ==================== MODAL DE COMANDOS (ATUALIZADO) ====================
+// ==================== MODAL DE COMANDOS ====================
 function mostrarDocs() {
   const menuScreen = document.getElementById('main-menu-screen');
-  
   fromMenu = (menuScreen.style.display === 'flex');
-  if (fromMenu) {
-    menuScreen.style.display = 'none';
-  }
-
+  if (fromMenu) menuScreen.style.display = 'none';
   document.getElementById('modal-docs').style.display = 'flex';
 }
 
 function fecharModal() {
   document.getElementById('modal-docs').style.display = 'none';
-
   if (fromMenu) {
     document.getElementById('main-menu-screen').style.display = 'flex';
     fromMenu = false;
@@ -732,7 +725,7 @@ function checkVictory() {
   return false;
 }
 
-// ==================== TELA FINAL ==================== //
+// ==================== TELA FINAL (COM BOTÃO VOLTAR AO MENU) ==================== //
 function mostrarTelaFinal() {
   let totalStars = Object.values(levelStars).reduce((a, b) => a + b, 0);
   const maxPossible = 12;
@@ -761,6 +754,7 @@ function mostrarTelaFinal() {
         <p style="margin:0 0 20px 0; font-size:18px; color:#94a3b8;">estrelas conquistadas</p>
         ${solutionPenaltyText}
         <p style="font-size:23px; margin:20px 0 30px 0;">${emoji} ${rating}</p>
+        
         <div style="background:#0f172a; padding:18px; border-radius:12px; margin:25px 0; text-align:left; font-size:16px;">
           <strong style="color:#cbd5e1;">Desempenho por fase:</strong><br><br>
           Nível 1 — ${'⭐'.repeat(levelStars[1] || 0)}<br>
@@ -768,9 +762,15 @@ function mostrarTelaFinal() {
           Nível 3 — ${'⭐'.repeat(levelStars[3] || 0)}<br>
           Nível 4 — ${'⭐'.repeat(levelStars[4] || 0)}
         </div>
-        <button onclick="reiniciarTudo()" style="background:#22c55e; color:#0f172a; border:none; padding:16px 40px; font-size:18px; font-weight:bold; border-radius:12px; cursor:pointer; margin-top:15px;">
-          Jogar Novamente
-        </button>
+
+        <div style="display:flex; gap:12px; margin-top:25px;">
+          <button onclick="reiniciarTudo()" style="flex:1; background:#22c55e; color:#0f172a; border:none; padding:16px; font-size:18px; font-weight:bold; border-radius:12px; cursor:pointer;">
+            ▶️ Jogar Novamente
+          </button>
+          <button onclick="voltarAoMenu()" style="flex:1; background:#64748b; color:white; border:none; padding:16px; font-size:18px; font-weight:bold; border-radius:12px; cursor:pointer;">
+            🏠 Voltar ao Menu
+          </button>
+        </div>
       </div>
     </div>
   `;
@@ -779,6 +779,11 @@ function mostrarTelaFinal() {
   finalScreen.id = "final-screen";
   finalScreen.innerHTML = finalHTML;
   document.body.appendChild(finalScreen);
+}
+
+function voltarAoMenu() {
+  if (document.getElementById("final-screen")) document.getElementById("final-screen").remove();
+  showMainMenu();
 }
 
 function reiniciarTudo() {

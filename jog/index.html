@@ -20,38 +20,27 @@
   </div>
 
   <div class="container">
-    <!-- EDITOR -->
     <div class="editor">
       <div class="editor-header">
         <span id="level-title">Nível 1 — Colete os 4 chipes!</span>
         <span style="color:#ffd93d; cursor:pointer;" onclick="mostrarDica()">💡 Dica</span>
       </div>
-      
       <div class="hud">
         <div id="lives" class="lives">❤️❤️❤️</div>
         <div id="timer" class="timer">⏱️ <span id="time-left">60</span>s</div>
       </div>
-      
       <pre class="code-area" id="code" contenteditable="true" spellcheck="false"></pre>
-      
-      <!-- CONTROLES -->
       <div class="controls">
-        <button onclick="startGame()" id="btn-start" class="btn-start">
-          ▶️ INICIAR JOGO
-        </button>
-        <button onclick="executarCodigo()" id="btn-exec" class="btn-exec">
-          ▶️ Executar
-        </button>
+        <button onclick="startGame()" id="btn-start" class="btn-start">▶️ INICIAR JOGO</button>
+        <button onclick="executarCodigo()" id="btn-exec" class="btn-exec">▶️ Executar</button>
         <button onclick="mostrarSolucao()" id="btn-solucao" class="btn-solucao">❓Solução</button>
         <button onclick="mostrarDocs()" class="btn-docs">📖 Tutorial</button>
         <button onclick="resetNivel()" class="btn-reset">🔄 Reset</button>
         <button onclick="proximoNivel()" id="btn-proximo" class="btn-proximo" style="display:none;">Próximo Nível ▶</button>
       </div>
-      
       <div id="status" class="status"></div>
     </div>
 
-    <!-- CANVAS -->
     <div class="grid-container">
       <canvas id="canvas" width="560" height="560"></canvas>
     </div>
@@ -96,7 +85,6 @@
       <div id="transition-stars" class="stars-big"></div>
       <p class="transition-subtitle">Preparando próximo desafio...</p>
       <p id="transition-next">Nível <span id="next-level-num">2</span></p>
-      
       <div class="loading-container">
         <div class="loading-bar">
           <div class="loading-progress"></div>
@@ -108,39 +96,17 @@
   <!-- TELA DE MENU PRINCIPAL -->
   <div id="main-menu-screen" class="menu-screen">
     <div class="menu-content">
-      <div class="menu-header">
-        🤖 <span>Robô Codificador</span><span style="font-size:28px; margin-left:8px;">PRO</span>
-      </div>
-      
+      <div class="menu-header">🤖 <span>Robô Codificador</span><span style="font-size:28px; margin-left:8px;">PRO</span></div>
       <h1 class="menu-title">Bem-vindo, Programador!</h1>
       <p class="menu-subtitle">Colete os chips e domine a arte da programação</p>
-      
-      <div class="total-stars">
-        <span id="menu-total-stars">0</span> ⭐
-        <small>de 12 estrelas</small>
-      </div>
-
+      <div class="total-stars"><span id="menu-total-stars">0</span> ⭐ <small>de 12 estrelas</small></div>
       <div class="menu-buttons">
-        <button onclick="startGameFromMenu()" class="btn-menu-primary">
-          ▶️ INICIAR JOGO
-        </button>
-        
-        <button onclick="showLevelSelector()" class="btn-menu-secondary">
-          📋 Selecionar Nível
-        </button>
-        
-        <button onclick="mostrarDocs()" class="btn-menu-secondary">
-          📖 Como Jogar
-        </button>
-        
-        <button onclick="resetProgressFromMenu()" class="btn-menu-warning">
-          🗑️ Resetar Progresso
-        </button>
+        <button onclick="startGameFromMenu()" class="btn-menu-primary">▶️ INICIAR JOGO</button>
+        <button onclick="showLevelSelector()" class="btn-menu-secondary">📋 Selecionar Nível</button>
+        <button onclick="mostrarDocs()" class="btn-menu-secondary">📖 Como Jogar</button>
+        <button onclick="resetProgressFromMenu()" class="btn-menu-warning">🗑️ Resetar Progresso</button>
       </div>
-
-      <div class="menu-footer">
-        <small>Feito com ❤️ para quem quer aprender codificando</small>
-      </div>
+      <div class="menu-footer"><small>Feito com ❤️ para quem quer aprender codificando</small></div>
     </div>
   </div>
 
