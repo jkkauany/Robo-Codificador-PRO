@@ -39,7 +39,9 @@
         <button onclick="startGame()" id="btn-start" class="btn-start">
           ▶️ INICIAR JOGO
         </button>
-        <button onclick="executarCodigo()" class="btn-exec">▶️ Executar</button>
+        <button onclick="executarCodigo()" id="btn-exec" class="btn-exec">
+          ▶️ Executar
+        </button>
         <button onclick="mostrarSolucao()" id="btn-solucao" class="btn-solucao">❓Solução</button>
         <button onclick="mostrarDocs()" class="btn-docs">📖 Tutorial</button>
         <button onclick="resetNivel()" class="btn-reset">🔄 Reset</button>
@@ -55,7 +57,7 @@
     </div>
   </div>
 
-  <!-- MODAL -->
+  <!-- MODAL DOCS -->
   <div id="modal-docs">
     <div class="modal-content">
       <h2>📖 Comandos Disponíveis</h2>
@@ -70,6 +72,19 @@
         Escreva um comando por linha.
       </p>
       <button onclick="fecharModal()" class="btn-fechar">Fechar</button>
+    </div>
+  </div>
+
+  <!-- MODAL TEMPO ESGOTADO -->
+  <div id="modal-timeout">
+    <div class="modal-content">
+      <h2>⏰ Seu tempo acabou!</h2>
+      <p style="font-size:18px; margin:20px 0 10px 0;">Você perdeu uma vida.</p>
+      <p style="margin-bottom:30px; font-size:17px;">Gostaria de jogar novamente este nível?</p>
+      <div style="display:flex; gap:15px;">
+        <button onclick="reiniciarNivelDoTimeout()" style="flex:1; background:#38e172; color:white; padding:14px; border-radius:10px; font-weight:700; cursor:pointer;">Sim, jogar novamente</button>
+        <button onclick="fecharModalTimeout()" style="flex:1; background:#64748b; color:white; padding:14px; border-radius:10px; font-weight:700; cursor:pointer;">Cancelar</button>
+      </div>
     </div>
   </div>
 

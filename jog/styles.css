@@ -104,6 +104,7 @@ button {
 }
 
 button:hover { transform: translateY(-2px); }
+button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
 .btn-exec { background: var(--primary); color: white; }
 .btn-solucao { background: var(--accent); color: white; }
@@ -188,7 +189,7 @@ canvas {
 .timer.low { color: #ff3b5c; animation: pulse 800ms infinite; }
 @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
 
-#modal-docs {
+#modal-docs, #modal-timeout {
   display: none; position: fixed; inset: 0;
   background: rgba(20,20,34,0.9); z-index: 9999;
   justify-content: center; align-items: center;
