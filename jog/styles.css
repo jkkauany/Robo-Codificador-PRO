@@ -250,7 +250,7 @@ canvas {
 }
 .btn-fechar { width: 100%; padding: 12px; background: var(--primary); color: white; border-radius: 10px; font-size: 15px; cursor: pointer; }
 
-/* ====================== TRANSITION SCREEN ====================== */
+/* ====================== TRANSITION SCREEN (mantida intacta) ====================== */
 .transition-screen {
   display: none;
   position: fixed;
@@ -340,43 +340,52 @@ canvas {
   100% { width: 100%; }
 }
 
-@media (max-width: 1024px) {
-  .container { flex-direction: column; padding: 20px; }
-  .editor { max-width: 100%; }
-}
-@media (max-width: 768px) { 
-  button { flex: 1 1 calc(50% - 8px); }
-  .header {
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .btn-menu-game {
-    flex: 1;
-    min-width: 140px;
-  }
-}
-@media (max-width: 480px) { 
-  button { flex: 1 1 100%; }
-  .controls { flex-direction: column; }
-}
-
-/* ====================== TELA DE MENU ====================== */
+/* ====================== TELA DE MENU - FUNDO PRETO COM CÓDIGOS AZUIS ====================== */
 .menu-screen {
   display: none;
   position: fixed;
   top: 0; left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #0f172a, #1e2937);
   z-index: 11000;
   align-items: center;
   justify-content: center;
   color: white;
   animation: fadeIn 0.4s ease forwards;
+  overflow: hidden;
+  background: #0a0a1f;
+}
+
+/* Efeito Matrix - códigos azuis neon caindo */
+.menu-screen::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: linear-gradient(transparent, rgba(0, 120, 255, 0.1));
+  animation: codeRain 22s linear infinite;
+  opacity: 0.85;
+  z-index: 1;
+  background-image: 
+    linear-gradient(#00aaff 1px, transparent 1px),
+    linear-gradient(90deg, #00aaff 1px, transparent 1px);
+  background-size: 70px 70px;
+}
+
+/* Brilho quente sutil no centro */
+.menu-screen::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: radial-gradient(circle at center, rgba(255, 120, 0, 0.12) 0%, transparent 70%);
+  z-index: 2;
+  pointer-events: none;
 }
 
 .menu-content {
+  position: relative;
+  z-index: 3;
   text-align: center;
   max-width: 520px;
   padding: 40px 30px;
@@ -464,7 +473,13 @@ canvas {
   font-size: 14px;
 }
 
-/* Seletor de Níveis */
+/* ====================== ANIMAÇÃO DOS CÓDIGOS ====================== */
+@keyframes codeRain {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 1400px; }
+}
+
+/* ====================== SELETOR DE NÍVEIS ====================== */
 .modal-levels {
   display: none;
   position: fixed;
