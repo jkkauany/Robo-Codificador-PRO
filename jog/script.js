@@ -14,6 +14,7 @@ let timeBonusChips = [];
 let timeExpired = false;
 let isRunning = false;
 let shouldStopExecution = false;
+let isPaused = false;
 
 // ==================== VIDAS E TIMER ==================== //
 let lives = 3;
@@ -491,7 +492,7 @@ function applyLevelTheme() {
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 async function moveTo(newGridX, newGridY) {
-  if (timeExpired) return;
+  if (timeExpired || isPaused) return;
 
   const startX = robotPixel.x;
   const startY = robotPixel.y;
@@ -562,7 +563,7 @@ async function moveTo(newGridX, newGridY) {
 
 // ==================== EXECUTAR CÓDIGO ==================== //
 async function executarCodigo() {
-  if (isRunning || timeExpired) return;
+  if (isRunning || timeExpired || isPaused) return;
   isRunning = true;
   shouldStopExecution = false;
 
@@ -665,7 +666,7 @@ const commandFunctions = {
   'moverBaixo': moverBaixo
 };
 
-// ==================== NOVA FUNÇÃO: SOLUÇÃO AUTOMÁTICA ======================
+// ==================== SOLUÇÃO AUTOMÁTICA ======================
 function computeAutomaticSolution() {
   if (chips.every(c => c.collected)) {
     return "✅ Todos os chips já foram coletados!";
@@ -1021,7 +1022,53 @@ function loadLevel(index, showStartButton = true, keepTimerRunning = false) {
   updateLivesUI();
   applyLevelTheme();
   draw();
-  createMenuButton();
+}
+
+// ==================== PAUSE SYSTEM ==================== //
+function showPause() {
+  if (isRunning) return;
+  if (isPaused) return;
+
+  isPaused = true;
+  pauseTimer();
+
+  document.getElementById('modal-pause').style.display = 'flex';
+}
+
+function resumeGame() {
+  document.getElementById('modal-pause').style.display = 'none';
+  isPaused = false;
+  resumeTimer();
+}
+
+function endGameFromPause() {
+  document.getElementById('modal-pause').style.display = 'none';
+  isPaused = false;
+  voltarAoMenuDoJogo();
+}
+
+// Timer helpers
+function pauseTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+}
+
+function resumeTimer() {
+  if (timerInterval || timeExpired || isPaused) return;
+  timerInterval = setInterval(() => {
+    if (timeExpired || isPaused) return;
+    timeLeft--;
+    document.getElementById('time-left').textContent = timeLeft;
+    if (timeLeft <= 10) document.getElementById('timer').classList.add('low');
+    else document.getElementById('timer').classList.remove('low');
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      handleTimeOut();
+    }
+  }, 1000);
 }
 
 function loseLife(msg = "Você perdeu uma vida!") {
@@ -1058,7 +1105,6 @@ function startGame() {
   document.getElementById('status').innerHTML = '🎮 Fase iniciada! Boa sorte!';
   startTimer();
   draw();
-  createMenuButton();
 }
 
 function resetNivel() {
@@ -1086,16 +1132,7 @@ function startTimer() {
   document.getElementById('time-left').textContent = timeLeft;
   document.getElementById('timer').classList.remove('low');
 
-  timerInterval = setInterval(() => {
-    if (timeExpired) return;
-    timeLeft--;
-    document.getElementById('time-left').textContent = timeLeft;
-    if (timeLeft <= 10) document.getElementById('timer').classList.add('low');
-    if (timeLeft <= 0) {
-      clearInterval(timerInterval);
-      handleTimeOut();
-    }
-  }, 1000);
+  resumeTimer();
 }
 
 function handleTimeOut() {
@@ -1134,15 +1171,11 @@ function fecharModalTimeout() {
   document.getElementById('modal-timeout').style.display = 'none';
 }
 
-function createMenuButton() {
-  // função auxiliar caso precise
-}
-
 // ==================== TECLADO ==================== //
 document.addEventListener('keydown', function(e) {
   const codeArea = document.getElementById('code');
   if (codeArea.contentEditable === 'false') return;
-  if (isRunning) return;
+  if (isRunning || isPaused) return;
   if (document.activeElement !== codeArea) return;
 
   let command = '';
@@ -1166,7 +1199,7 @@ document.addEventListener('keydown', function(e) {
   sel.addRange(range);
 });
 
-// ====================== VOLTAR AO MENU DO JOGO ======================
+// ====================== VOLTAR AO MENU ======================
 function voltarAoMenuDoJogo() {
   if (isRunning) {
     isRunning = false;
@@ -1176,6 +1209,8 @@ function voltarAoMenuDoJogo() {
     clearInterval(timerInterval);
     timerInterval = null;
   }
+  isPaused = false;
+  document.getElementById('modal-pause').style.display = 'none';
 
   document.getElementById('status').innerHTML = '';
 

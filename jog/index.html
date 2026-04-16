@@ -8,7 +8,7 @@
 </head>
 <body>
 
-  <!-- HEADER -->
+  <!-- HEADER (sem o botão pause) -->
   <div class="header">
     <div class="logo">
       🤖 <span>Robô Codificador</span>
@@ -18,14 +18,15 @@
     <button onclick="resetProgress()" class="btn-reset-progress">
       🗑️ Resetar Progresso
     </button>
-    
-    <!-- NOVO BOTÃO MENU -->
-    <button onclick="voltarAoMenuDoJogo()" class="btn-menu-game">
-      🏠 Menu.
-    </button>
   </div>
 
   <div class="container">
+    
+    <!-- BOTÃO PAUSE NO CANTO SUPERIOR DIREITO DA TELA DE JOGO -->
+    <button onclick="showPause()" id="btn-pause" class="btn-pause-game">
+      ⏸️
+    </button>
+
     <div class="editor">
       <div class="editor-header">
         <span id="level-title">Nível 1 — Colete os 4 chipes!</span>
@@ -79,6 +80,25 @@
       <div style="display:flex; gap:15px;">
         <button onclick="reiniciarNivelDoTimeout()" style="flex:1; background:#38e172; color:white; padding:14px; border-radius:10px; font-weight:700; cursor:pointer;">Sim, jogar novamente</button>
         <button onclick="fecharModalTimeout()" style="flex:1; background:#64748b; color:white; padding:14px; border-radius:10px; font-weight:700; cursor:pointer;">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PAUSE (igual ao exemplo das imagens) -->
+  <div id="modal-pause">
+    <div class="modal-content-pause">
+      <div class="pause-box">
+        <div class="pause-title">PAUSE</div>
+        
+        <button onclick="resumeGame()" class="pause-btn-continue">
+          CONTINUE ▶
+        </button>
+        
+        <button onclick="endGameFromPause()" class="pause-btn-end">
+          END GAME
+        </button>
+        
+        <div class="pause-footer">PRESS SPACE TO CONTINUE</div>
       </div>
     </div>
   </div>

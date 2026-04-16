@@ -35,7 +35,7 @@ body {
   border-radius: 18px 18px 0 0;
   box-shadow: 0 10px 35px rgba(0,0,0,0.45);
   gap: 12px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .header .logo {
@@ -44,35 +44,19 @@ body {
   white-space: nowrap;
 }
 
-.btn-reset-progress, .btn-menu-game {
+.btn-reset-progress {
   padding: 10px 18px;
   font-size: 14px;
   font-weight: 600;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  background: var(--warning);
+  color: white;
   white-space: nowrap;
 }
 
-.btn-reset-progress {
-  background: var(--warning);
-  color: white;
-}
-
-.btn-menu-game {
-  background: #64748b;
-  color: white;
-}
-
-.btn-menu-game:hover {
-  background: #475569;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-
+/* ====================== CONTAINER COM BOTÃO PAUSE NO CANTO SUPERIOR DIREITO ====================== */
 .container { 
   display: flex; 
   gap: 25px; 
@@ -83,6 +67,32 @@ body {
   max-width: 1180px; 
   width: 100%;
   align-items: stretch;
+  position: relative;           /* ← necessário para posicionar o botão pause */
+}
+
+.btn-pause-game {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  z-index: 100;
+  background: #64748b;
+  color: white;
+  font-size: 32px;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  transition: all 0.2s ease;
+}
+
+.btn-pause-game:hover {
+  background: #475569;
+  transform: scale(1.1);
 }
 
 .editor { 
@@ -191,6 +201,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
 }
 
 canvas { 
@@ -202,6 +213,7 @@ canvas {
   box-shadow: 0 15px 45px rgba(100,150,255,0.35); 
 }
 
+/* ====================== RESTO DO CSS (mantido igual ao anterior) ====================== */
 .progress-bar { display: flex; gap: 8px; padding: 8px 0; }
 
 .level-dot {
@@ -238,8 +250,8 @@ canvas {
 .timer.low { color: #ff3b5c; animation: pulse 800ms infinite; }
 @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
 
-#modal-docs, #modal-timeout {
-  display: none; position: fixed; inset: 0;
+#modal-docs, #modal-timeout, #modal-pause {
+  display: none; position: absolute;  inset: 0;
   background: rgba(20,20,34,0.9); z-index: 9999;
   justify-content: center; align-items: center;
 }
@@ -250,7 +262,79 @@ canvas {
 }
 .btn-fechar { width: 100%; padding: 12px; background: var(--primary); color: white; border-radius: 10px; font-size: 15px; cursor: pointer; }
 
-/* ====================== TRANSITION SCREEN (mantida intacta) ====================== */
+/* ====================== PAUSE MODAL ====================== */
+.modal-content-pause {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  justify-content: center;
+}
+
+.pause-box {
+  background: #0f172a;
+  border: 14px solid #7dd3fc;
+  padding: 30px 40px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 
+    0 0 0 8px #1e2a4a,
+    0 25px 60px rgba(0,0,0,0.6);
+  text-align: center;
+}
+
+.pause-title {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 58px;
+  font-weight: 900;
+  color: #7dd3fc;
+  letter-spacing: 14px;
+  text-shadow: 
+    6px 6px 0 #000,
+    -2px -2px 0 #000;
+  margin-bottom: 40px;
+}
+
+.pause-btn-continue,
+.pause-btn-end {
+  display: block;
+  width: 100%;
+  padding: 22px;
+  margin: 14px 0;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pause-btn-continue {
+  background: #38e172;
+  color: #0f172a;
+  box-shadow: 0 10px 0 #1e3a5f;
+}
+
+.pause-btn-end {
+  background: #64748b;
+  color: white;
+  box-shadow: 0 10px 0 #1e3a5f;
+}
+
+.pause-btn-continue:active,
+.pause-btn-end:active {
+  transform: translateY(4px);
+  box-shadow: 0 4px 0 #1e3a5f;
+}
+
+.pause-footer {
+  margin-top: 30px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 17px;
+  color: #a5b4fc;
+  letter-spacing: 3px;
+}
+
+/* ====================== RESTO DO CSS (transição, menu, etc.) ====================== */
 .transition-screen {
   display: none;
   position: fixed;
@@ -340,7 +424,6 @@ canvas {
   100% { width: 100%; }
 }
 
-/* ====================== TELA DE MENU - FUNDO PRETO COM CÓDIGOS AZUIS ====================== */
 .menu-screen {
   display: none;
   position: fixed;
@@ -356,7 +439,6 @@ canvas {
   background: #0a0a1f;
 }
 
-/* Efeito Matrix - códigos azuis neon caindo */
 .menu-screen::before {
   content: '';
   position: absolute;
@@ -372,7 +454,6 @@ canvas {
   background-size: 70px 70px;
 }
 
-/* Brilho quente sutil no centro */
 .menu-screen::after {
   content: '';
   position: absolute;
@@ -473,13 +554,11 @@ canvas {
   font-size: 14px;
 }
 
-/* ====================== ANIMAÇÃO DOS CÓDIGOS ====================== */
 @keyframes codeRain {
   0% { background-position: 0 0; }
   100% { background-position: 0 1400px; }
 }
 
-/* ====================== SELETOR DE NÍVEIS ====================== */
 .modal-levels {
   display: none;
   position: fixed;
