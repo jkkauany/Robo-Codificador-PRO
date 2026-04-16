@@ -32,106 +32,11 @@ let fromMenu = false;
 
 // ====================== TEMAS POR NÍVEL ======================
 const levelThemes = [
-  // Nível 1 - Azul Neon (clean e acolhedor)
-  {
-    canvasBg: '#e0f2ff',
-    gridColor: '#7dd3fc',
-    editorBg: '#0a1428',
-    headerBg: '#1e2a4a',
-    primaryBtn: '#00e6b8',
-    successColor: '#22ffaa'
-  },
-  // Nível 2 - Roxo Cyber (vibrante)
-  {
-    canvasBg: '#f3e8ff',
-    gridColor: '#c084fc',
-    editorBg: '#1a0f2e',
-    headerBg: '#2e1b4a',
-    primaryBtn: '#a855f7',
-    successColor: '#e879f9'
-  },
-  // Nível 3 - Verde Esmeralda (energético)
-  {
-    canvasBg: '#ecfdf5',
-    gridColor: '#4ade80',
-    editorBg: '#052e16',
-    headerBg: '#14532d',
-    primaryBtn: '#22c55e',
-    successColor: '#86efac'
-  },
-  // Nível 4 - Laranja Épico (desafio final)
-  {
-    canvasBg: '#fffbeb',
-    gridColor: '#fcd34d',
-    editorBg: '#3f2a0f',
-    headerBg: '#78350f',
-    primaryBtn: '#f97316',
-    successColor: '#fbbf24'
-  }
+  { canvasBg: '#e0f2ff', gridColor: '#7dd3fc', editorBg: '#0a1428', headerBg: '#1e2a4a', primaryBtn: '#00e6b8', successColor: '#22ffaa' },
+  { canvasBg: '#f3e8ff', gridColor: '#c084fc', editorBg: '#1a0f2e', headerBg: '#2e1b4a', primaryBtn: '#a855f7', successColor: '#e879f9' },
+  { canvasBg: '#ecfdf5', gridColor: '#4ade80', editorBg: '#052e16', headerBg: '#14532d', primaryBtn: '#22c55e', successColor: '#86efac' },
+  { canvasBg: '#fffbeb', gridColor: '#fcd34d', editorBg: '#3f2a0f', headerBg: '#78350f', primaryBtn: '#f97316', successColor: '#fbbf24' }
 ];
-
-function updateLivesUI() {
-  document.getElementById('lives').innerHTML = '❤️'.repeat(lives) + '♡'.repeat(3 - lives);
-}
-
-function startTimer() {
-  if (timerInterval) clearInterval(timerInterval);
-  
-  timeLeft = levelTimes[currentLevelIndex];
-  penaltyTime = 0;
-  levelStartTime = Date.now();
-  timeExpired = false;
-
-  document.getElementById('time-left').textContent = timeLeft;
-  document.getElementById('timer').classList.remove('low');
-
-  timerInterval = setInterval(() => {
-    if (timeExpired) return;
-    timeLeft--;
-    document.getElementById('time-left').textContent = timeLeft;
-    if (timeLeft <= 10) document.getElementById('timer').classList.add('low');
-    if (timeLeft <= 0) {
-      clearInterval(timerInterval);
-      handleTimeOut();
-    }
-  }, 1000);
-}
-
-function handleTimeOut() {
-  timeExpired = true;
-  lives--;
-  updateLivesUI();
-  penaltyTime += 30;
-
-  const statusEl = document.getElementById('status');
-  statusEl.classList.add('error');
-  statusEl.innerHTML = `⏰ Seu tempo acabou! — Perdeu 1 vida (+30s penalidade)`;
-
-  document.getElementById('btn-exec').disabled = true;
-  const codeArea = document.getElementById('code');
-  codeArea.contentEditable = 'false';
-  codeArea.style.opacity = '0.5';
-  codeArea.style.cursor = 'not-allowed';
-
-  if (lives <= 0) {
-    alert("💀 GAME OVER\n\nVocê perdeu todas as 3 vidas!\n\nVoltando para o nível atual com vidas novas.");
-    lives = 3;
-    updateLivesUI();
-    loadLevel(currentLevelIndex, true);
-    return;
-  }
-
-  document.getElementById('modal-timeout').style.display = 'flex';
-}
-
-function reiniciarNivelDoTimeout() {
-  document.getElementById('modal-timeout').style.display = 'none';
-  loadLevel(currentLevelIndex, false, false);
-}
-
-function fecharModalTimeout() {
-  document.getElementById('modal-timeout').style.display = 'none';
-}
 
 // ==================== PROGRESSO ==================== //
 function loadProgress() {
@@ -214,7 +119,6 @@ function showLevelSelector() {
   for (let i = 1; i <= 4; i++) {
     const level = levels.find(l => l.number === i);
     if (!level) continue;
-
     const isUnlocked = (i === 1) || completedLevels.includes(i - 1);
     const stars = levelStars[i] || 0;
 
@@ -518,7 +422,6 @@ function draw() {
   const time = Date.now() / 1000;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   
-  // === TEMA DO NÍVEL ===
   ctx.fillStyle = window.currentCanvasBg || '#e0f2ff';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -531,7 +434,6 @@ function draw() {
   ctx.fillText('< />', canvas.width/2, canvas.height/2 + 15);
   ctx.restore();
 
-  // Grid com cor do tema
   ctx.strokeStyle = window.currentGridColor || '#d1d5db';
   ctx.lineWidth = 2.8;
   for (let i = 0; i <= COLS; i++) {
@@ -557,7 +459,6 @@ function applyLevelTheme() {
   window.currentCanvasBg = theme.canvasBg;
   window.currentGridColor = theme.gridColor;
 
-  // Editor
   const editor = document.querySelector('.editor');
   const codeArea = document.getElementById('code');
   if (editor) editor.style.background = theme.editorBg;
@@ -566,17 +467,14 @@ function applyLevelTheme() {
     codeArea.style.color = '#e0f2fe';
   }
 
-  // Header
   const header = document.querySelector('.header');
   if (header) header.style.background = theme.headerBg;
 
-  // Botões principais
   const btnExec = document.getElementById('btn-exec');
   const btnProximo = document.getElementById('btn-proximo');
   if (btnExec) btnExec.style.background = theme.primaryBtn;
   if (btnProximo) btnProximo.style.background = theme.primaryBtn;
 
-  // Status success
   let style = document.getElementById('dynamic-theme-style');
   if (!style) {
     style = document.createElement('style');
@@ -767,6 +665,144 @@ const commandFunctions = {
   'moverBaixo': moverBaixo
 };
 
+// ==================== NOVA FUNÇÃO: SOLUÇÃO AUTOMÁTICA ======================
+function computeAutomaticSolution() {
+  if (chips.every(c => c.collected)) {
+    return "✅ Todos os chips já foram coletados!";
+  }
+
+  const startX = robot.gridX;
+  const startY = robot.gridY;
+
+  const targets = chips.filter(c => !c.collected).map(c => ({ x: c.x, y: c.y }));
+  const numTargets = targets.length;
+  if (numTargets === 0) return "✅ Todos os chips já foram coletados!";
+
+  const targetMap = {};
+  targets.forEach((t, idx) => {
+    targetMap[`${t.x},${t.y}`] = idx;
+  });
+
+  const fullMask = (1 << numTargets) - 1;
+
+  const forbidden = new Set();
+  traps.forEach(t => forbidden.add(`${t.x},${t.y}`));
+  corruptedChips.forEach(c => forbidden.add(`${c.x},${c.y}`));
+
+  const dirs = [
+    { dx: 1,  dy: 0, cmd: 'moverDireita' },
+    { dx: -1, dy: 0, cmd: 'moverEsquerda' },
+    { dx: 0,  dy: -1, cmd: 'moverCima' },
+    { dx: 0,  dy: 1, cmd: 'moverBaixo' }
+  ];
+
+  const queue = [];
+  const visited = new Set();
+  const cameFrom = {};
+  const cameCommand = {};
+
+  let startMask = 0;
+  const startPosKey = `${startX},${startY}`;
+  if (targetMap[startPosKey] !== undefined) {
+    startMask |= (1 << targetMap[startPosKey]);
+  }
+
+  const startKey = `${startX},${startY},${startMask}`;
+  queue.push({ x: startX, y: startY, mask: startMask });
+  visited.add(startKey);
+
+  let goalKey = null;
+
+  while (queue.length > 0) {
+    const { x, y, mask } = queue.shift();
+    const currentKey = `${x},${y},${mask}`;
+
+    if (mask === fullMask) {
+      goalKey = currentKey;
+      break;
+    }
+
+    for (let d of dirs) {
+      const nx = x + d.dx;
+      const ny = y + d.dy;
+
+      if (nx < 0 || nx >= COLS || ny < 0 || ny >= ROWS) continue;
+      if (forbidden.has(`${nx},${ny}`)) continue;
+
+      let newMask = mask;
+      const nposKey = `${nx},${ny}`;
+      if (targetMap[nposKey] !== undefined) {
+        newMask |= (1 << targetMap[nposKey]);
+      }
+
+      const newKey = `${nx},${ny},${newMask}`;
+      if (!visited.has(newKey)) {
+        visited.add(newKey);
+        cameFrom[newKey] = currentKey;
+        cameCommand[newKey] = d.cmd;
+        queue.push({ x: nx, y: ny, mask: newMask });
+      }
+    }
+  }
+
+  if (!goalKey) return null;
+
+  const pathCommands = [];
+  let current = goalKey;
+  const startKeyFull = startKey;
+
+  while (current !== startKeyFull) {
+    pathCommands.push(cameCommand[current]);
+    current = cameFrom[current];
+  }
+  pathCommands.reverse();
+
+  const grouped = [];
+  let i = 0;
+  while (i < pathCommands.length) {
+    const cmd = pathCommands[i];
+    let count = 1;
+    i++;
+    while (i < pathCommands.length && pathCommands[i] === cmd) {
+      count++;
+      i++;
+    }
+    grouped.push(count === 1 ? `${cmd}()` : `${cmd}(${count})`);
+  }
+
+  return grouped.join('\n');
+}
+
+// ==================== BOTÃO SOLUÇÃO AUTOMÁTICO ====================
+function mostrarSolucao() {
+  const codeArea = document.getElementById('code');
+  const currentCode = codeArea.innerText.trim();
+  const statusEl = document.getElementById('status');
+
+  if (currentCode) {
+    codeArea.innerText = '';
+    statusEl.classList.remove('success', 'error');
+    statusEl.innerHTML = '✅ Solução removida!';
+    return;
+  }
+
+  statusEl.classList.remove('success', 'error');
+  statusEl.innerHTML = '🤖 Calculando rota automática...';
+
+  setTimeout(() => {
+    const solutionStr = computeAutomaticSolution();
+
+    if (solutionStr) {
+      codeArea.innerText = solutionStr;
+      statusEl.classList.add('success');
+      statusEl.innerHTML = `📋 Solução automática carregada!<br><small>Do ponto atual até os chips restantes</small>`;
+    } else {
+      statusEl.classList.add('error');
+      statusEl.innerHTML = '❌ Não foi possível encontrar uma solução automática deste ponto.<br>Tente mover o robô manualmente antes.';
+    }
+  }, 30);
+}
+
 // ==================== CHECK VICTORY ==================== //
 function checkVictory() {
   if (chips.every(c => c.collected)) {
@@ -809,18 +845,15 @@ function checkVictory() {
 }
 
 function mostrarTelaFinal() {
-  // Calcula o total real com base no que foi salvo (inclui penalidade da solução)
   let totalStars = Object.values(levelStars).reduce((a, b) => a + b, 0);
   const maxPossible = 12;
 
-  // Aplica penalidade da solução (se usada)
   let solutionPenaltyText = "";
   if (usedSolution) {
     totalStars = Math.max(0, totalStars - 2);
     solutionPenaltyText = `<p style="color:#f87171; margin:15px 0; font-size:17px;">⚠️ -2 estrelas de penalidade por usar a solução</p>`;
   }
 
-  // Rating baseado no total final
   let rating = "", emoji = "", color = "";
   if (totalStars === 12) { 
     rating = "🏆 Desempenho PERFEITO! Você é um mestre!"; 
@@ -986,7 +1019,7 @@ function loadLevel(index, showStartButton = true, keepTimerRunning = false) {
   }
 
   updateLivesUI();
-  applyLevelTheme();   // ← Aplicando o tema do nível
+  applyLevelTheme();
   draw();
   createMenuButton();
 }
@@ -1038,25 +1071,71 @@ function mostrarDica() {
   alert('💡 Dica: Planeje antes de agir. Assim você evita erros e avança com mais segurança. Tente imaginar o caminho do robô e quais comandos serão necessários para coletar os chips sem cair nas armadilhas!');
 }
 
-function mostrarSolucao() {
-  const codeArea = document.getElementById('code');
-  const level = levels[currentLevelIndex];
-  const currentCode = codeArea.innerText.trim();
-  const solutionCode = level.solution.trim();
+function updateLivesUI() {
+  document.getElementById('lives').innerHTML = '❤️'.repeat(lives) + '♡'.repeat(3 - lives);
+}
+
+function startTimer() {
+  if (timerInterval) clearInterval(timerInterval);
+  
+  timeLeft = levelTimes[currentLevelIndex];
+  penaltyTime = 0;
+  levelStartTime = Date.now();
+  timeExpired = false;
+
+  document.getElementById('time-left').textContent = timeLeft;
+  document.getElementById('timer').classList.remove('low');
+
+  timerInterval = setInterval(() => {
+    if (timeExpired) return;
+    timeLeft--;
+    document.getElementById('time-left').textContent = timeLeft;
+    if (timeLeft <= 10) document.getElementById('timer').classList.add('low');
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      handleTimeOut();
+    }
+  }, 1000);
+}
+
+function handleTimeOut() {
+  timeExpired = true;
+  lives--;
+  updateLivesUI();
+  penaltyTime += 30;
 
   const statusEl = document.getElementById('status');
+  statusEl.classList.add('error');
+  statusEl.innerHTML = `⏰ Seu tempo acabou! — Perdeu 1 vida (+30s penalidade)`;
 
-  if (currentCode === solutionCode) {
-    codeArea.innerText = '';
-    statusEl.classList.remove('success', 'error');
-    statusEl.innerHTML = '✅ Solução removida!';
-  } else {
-    codeArea.innerText = level.solution;
-    statusEl.classList.remove('success', 'error');
-    statusEl.innerHTML = currentLevelIndex === 3 ? '💡 Mensagem carregada!' : '📋 Solução carregada!';
+  document.getElementById('btn-exec').disabled = true;
+  const codeArea = document.getElementById('code');
+  codeArea.contentEditable = 'false';
+  codeArea.style.opacity = '0.5';
+  codeArea.style.cursor = 'not-allowed';
 
-    if (!usedSolution) usedSolution = true;
+  if (lives <= 0) {
+    alert("💀 GAME OVER\n\nVocê perdeu todas as 3 vidas!\n\nVoltando para o nível atual com vidas novas.");
+    lives = 3;
+    updateLivesUI();
+    loadLevel(currentLevelIndex, true);
+    return;
   }
+
+  document.getElementById('modal-timeout').style.display = 'flex';
+}
+
+function reiniciarNivelDoTimeout() {
+  document.getElementById('modal-timeout').style.display = 'none';
+  loadLevel(currentLevelIndex, false, false);
+}
+
+function fecharModalTimeout() {
+  document.getElementById('modal-timeout').style.display = 'none';
+}
+
+function createMenuButton() {
+  // função auxiliar caso precise
 }
 
 // ==================== TECLADO ==================== //
