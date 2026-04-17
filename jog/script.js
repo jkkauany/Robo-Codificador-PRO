@@ -16,6 +16,7 @@ let isRunning = false;
 let shouldStopExecution = false;
 let isPaused = false;
 
+
 // ==================== VIDAS E TIMER ==================== //
 let lives = 3;
 let timeLeft = 60;
