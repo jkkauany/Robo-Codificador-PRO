@@ -25,6 +25,7 @@ const levelTimes = [60, 60, 120, 120];
 
 let penaltyTime = 0;
 let levelStartTime = 0;
+let livesLostThisLevel = 0;
 
 let completedLevels = [];
 let levelStars = {};
@@ -796,6 +797,7 @@ function mostrarSolucao() {
 
     if (solutionStr) {
       codeArea.innerText = solutionStr;
+      usedSolution = true;
       statusEl.classList.add('success');
       statusEl.innerHTML = `📋 Solução automática carregada!<br><small>Do ponto atual até os chips restantes</small>`;
     } else {
@@ -815,12 +817,22 @@ function checkVictory() {
     const realTimeSpent = Math.floor((Date.now() - levelStartTime) / 1000);
     const totalTimeSpent = realTimeSpent + penaltyTime;
 
-    const threshold3 = Math.floor(maxTime / 3);
-    const threshold2 = Math.floor(maxTime / 2);
+    // --- Nova lógica de estrelas ---
+    // Começa com 3 estrelas e desconta por penalidades
+    let earnedStars = 3;
 
-    let earnedStars = 1;
-    if (totalTimeSpent < threshold3) earnedStars = 3;
-    else if (totalTimeSpent < threshold2) earnedStars = 2;
+    // Penalidade por usar a solução: -1 estrela
+    if (usedSolution) earnedStars -= 1;
+
+    // Penalidade por perder vida(s): -1 estrela (independente de quantas)
+    if (livesLostThisLevel > 0) earnedStars -= 1;
+
+    // Penalidade por tempo lento (gastou mais de 50% do tempo disponível): -1 estrela
+    const timeThreshold = Math.floor(maxTime * 0.5);
+    if (totalTimeSpent >= timeThreshold) earnedStars -= 1;
+
+    // Mínimo de 1 estrela por completar o nível
+    earnedStars = Math.max(1, earnedStars);
 
     saveProgress(levelNum, earnedStars);
     shouldStopExecution = true;
@@ -840,6 +852,16 @@ function mostrarOverlayVitoria(levelNum, earnedStars, totalTimeSpent) {
 
   const isLast = currentLevelIndex === levels.length - 1;
 
+  const maxTime = levelTimes[currentLevelIndex];
+  const timeThreshold = Math.floor(maxTime * 0.5);
+  const timeOk = totalTimeSpent < timeThreshold;
+
+  // Gera linhas de detalhamento das estrelas
+  const detailLines = [];
+  detailLines.push(`${timeOk ? '✅' : '❌'} Tempo rápido (< ${timeThreshold}s): ${timeOk ? '+1 ⭐' : '0'}`);
+  detailLines.push(`${livesLostThisLevel === 0 ? '✅' : '❌'} Sem perder vidas: ${livesLostThisLevel === 0 ? '+1 ⭐' : '0'}`);
+  detailLines.push(`${!usedSolution ? '✅' : '❌'} Sem usar solução: ${!usedSolution ? '+1 ⭐' : '0'}`);
+
   const overlay = document.createElement('div');
   overlay.id = 'victory-overlay';
   overlay.innerHTML = `
@@ -848,6 +870,9 @@ function mostrarOverlayVitoria(levelNum, earnedStars, totalTimeSpent) {
       <div class="victory-title">Nível ${levelNum} Concluído!</div>
       <div class="victory-stars">${'⭐'.repeat(earnedStars)}${'☆'.repeat(3 - earnedStars)}</div>
       <div class="victory-time">⏱️ Tempo: ${totalTimeSpent}s${penaltyTime > 0 ? ` <span class="penalty">(+${penaltyTime}s penalidade)</span>` : ''}</div>
+      <div class="victory-details">
+        ${detailLines.map(l => `<div class="victory-detail-line">${l}</div>`).join('')}
+      </div>
       ${isLast
         ? `<button class="victory-btn victory-btn-final" onclick="fecharOverlayVitoriaFinal()">🏆 Ver Resultado Final</button>`
         : `<button class="victory-btn victory-btn-next" onclick="fecharOverlayEAvancar()">Próxima Fase ▶</button>`
@@ -1122,6 +1147,7 @@ function resumeTimer() {
 
 function loseLife(msg = "Você perdeu uma vida!") {
   lives--;
+  livesLostThisLevel++;
   updateLivesUI();
   penaltyTime += 30;
 
@@ -1175,6 +1201,8 @@ function startTimer() {
   
   timeLeft = levelTimes[currentLevelIndex];
   penaltyTime = 0;
+  livesLostThisLevel = 0;
+  usedSolution = false;
   levelStartTime = Date.now();
   timeExpired = false;
 
@@ -1187,6 +1215,7 @@ function startTimer() {
 function handleTimeOut() {
   timeExpired = true;
   lives--;
+  livesLostThisLevel++;
   updateLivesUI();
   penaltyTime += 30;
 

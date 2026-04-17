@@ -756,6 +756,36 @@ canvas {
   color: #f87171;
 }
 
+.victory-details {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 28px;
+  text-align: left;
+}
+
+.victory-detail-line {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 13px;
+  color: #94a3b8;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  line-height: 1.4;
+}
+
+.victory-detail-line:last-child {
+  border-bottom: none;
+}
+
+.victory-detail-line:has(✅) {
+  color: #6ee7b7;
+}
+
+.victory-detail-line:has(❌) {
+  color: #fca5a5;
+}
+
 .victory-btn {
   display: block;
   width: 100%;
