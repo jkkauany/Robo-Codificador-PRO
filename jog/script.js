@@ -16,7 +16,6 @@ let isRunning = false;
 let shouldStopExecution = false;
 let isPaused = false;
 
-
 // ==================== VIDAS E TIMER ==================== //
 let lives = 3;
 let timeLeft = 60;
@@ -27,6 +26,7 @@ const levelTimes = [60, 60, 120, 120];
 let penaltyTime = 0;
 let levelStartTime = 0;
 let livesLostThisLevel = 0;
+let collectedChipsMemory = []; // chips coletados que persistem ao perder vida
 
 let completedLevels = [];
 let levelStars = {};
@@ -1042,6 +1042,7 @@ function loadLevel(index, showStartButton = true, keepTimerRunning = false) {
 
   if (showStartButton) {
     lives = 3;
+    collectedChipsMemory = [];
     updateLivesUI();
   }
 
@@ -1049,6 +1050,14 @@ function loadLevel(index, showStartButton = true, keepTimerRunning = false) {
   robotPixel = { x: level.startX * CELL + CELL/2, y: level.startY * CELL + CELL/2 };
 
   chips = level.chips.map(chip => ({ ...chip, collected: false }));
+
+  // Restaura chips já coletados (persiste ao perder vida, reseta no game over)
+  if (collectedChipsMemory.length > 0) {
+    collectedChipsMemory.forEach(i => {
+      if (chips[i]) chips[i].collected = true;
+    });
+  }
+
   corruptedChips = level.corruptedChips ? level.corruptedChips.map(c => ({...c})) : [];
   traps = level.traps ? [...level.traps] : [];
   timeBonusChips = level.timeBonusChips ? level.timeBonusChips.map(c => ({...c, collected: false})) : [];
@@ -1155,9 +1164,15 @@ function loseLife(msg = "Você perdeu uma vida!") {
   if (lives <= 0) {
     alert("💀 GAME OVER\n\nVocê perdeu todas as 3 vidas!\n\nVoltando para o nível atual com vidas novas.");
     lives = 3;
+    collectedChipsMemory = []; // reset total ao perder as 3 vidas
     updateLivesUI();
     loadLevel(currentLevelIndex, true);
   } else {
+    // Salva quais chips já foram coletados antes de reiniciar
+    collectedChipsMemory = chips
+      .map((c, i) => c.collected ? i : -1)
+      .filter(i => i !== -1);
+
     const statusEl = document.getElementById('status');
     statusEl.classList.add('error');
     statusEl.innerHTML = `💥 ${msg} — Reiniciando automaticamente... (+30s de penalidade)`;
@@ -1233,10 +1248,16 @@ function handleTimeOut() {
   if (lives <= 0) {
     alert("💀 GAME OVER\n\nVocê perdeu todas as 3 vidas!\n\nVoltando para o nível atual com vidas novas.");
     lives = 3;
+    collectedChipsMemory = []; // reset total ao perder as 3 vidas
     updateLivesUI();
     loadLevel(currentLevelIndex, true);
     return;
   }
+
+  // Salva chips coletados antes de mostrar o modal
+  collectedChipsMemory = chips
+    .map((c, i) => c.collected ? i : -1)
+    .filter(i => i !== -1);
 
   document.getElementById('modal-timeout').style.display = 'flex';
 }
