@@ -1325,3 +1325,4 @@ document.getElementById('code').addEventListener('keydown', function(e) {
     executarCodigo();
   }
 });
+
