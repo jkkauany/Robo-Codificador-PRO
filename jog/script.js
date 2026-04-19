@@ -18,10 +18,10 @@ let isPaused = false;
 
 // ==================== VIDAS E TIMER ==================== //
 let lives = 3;
-let timeLeft = 60;
+let timeLeft = 0;                    // ← Alterado (não mais fixo em 60)
 let timerInterval = null;
 
-const levelTimes = [60, 60, 120, 120];
+const levelTimes = [60, 75, 90, 100];
 
 let penaltyTime = 0;
 let levelStartTime = 0;
@@ -561,7 +561,7 @@ async function moveTo(newGridX, newGridY) {
     statusEl.innerHTML = `✅ Chipe coletado! (${totalCollected}/${chips.length})`;
   }
 
-  updateChipCounter(); // ← ATUALIZA CONTADOR
+  updateChipCounter();
   checkVictory();
 }
 
@@ -818,27 +818,18 @@ function checkVictory() {
     const realTimeSpent = Math.floor((Date.now() - levelStartTime) / 1000);
     const totalTimeSpent = realTimeSpent + penaltyTime;
 
-    // --- Nova lógica de estrelas ---
-    // Começa com 3 estrelas e desconta por penalidades
     let earnedStars = 3;
 
-    // Penalidade por usar a solução: -1 estrela
     if (usedSolution) earnedStars -= 1;
-
-    // Penalidade por perder vida(s): -1 estrela (independente de quantas)
     if (livesLostThisLevel > 0) earnedStars -= 1;
-
-    // Penalidade por tempo lento (gastou mais de 50% do tempo disponível): -1 estrela
     const timeThreshold = Math.floor(maxTime * 0.5);
     if (totalTimeSpent >= timeThreshold) earnedStars -= 1;
 
-    // Mínimo de 1 estrela por completar o nível
     earnedStars = Math.max(1, earnedStars);
 
     saveProgress(levelNum, earnedStars);
     shouldStopExecution = true;
 
-    // Bloqueia a tela e exibe overlay de vitória após pequena pausa
     setTimeout(() => mostrarOverlayVitoria(levelNum, earnedStars, totalTimeSpent), 600);
 
     return true;
@@ -847,17 +838,14 @@ function checkVictory() {
 }
 
 function mostrarOverlayVitoria(levelNum, earnedStars, totalTimeSpent) {
-  // Remove overlay anterior se existir
   const old = document.getElementById('victory-overlay');
   if (old) old.remove();
 
   const isLast = currentLevelIndex === levels.length - 1;
-
   const maxTime = levelTimes[currentLevelIndex];
   const timeThreshold = Math.floor(maxTime * 0.5);
   const timeOk = totalTimeSpent < timeThreshold;
 
-  // Gera linhas de detalhamento das estrelas
   const detailLines = [];
   detailLines.push(`${timeOk ? '✅' : '❌'} Tempo rápido (< ${timeThreshold}s): ${timeOk ? '+1 ⭐' : '0'}`);
   detailLines.push(`${livesLostThisLevel === 0 ? '✅' : '❌'} Sem perder vidas: ${livesLostThisLevel === 0 ? '+1 ⭐' : '0'}`);
@@ -882,7 +870,6 @@ function mostrarOverlayVitoria(levelNum, earnedStars, totalTimeSpent) {
     </div>
   `;
 
-  // Bloqueia teclado e cliques no jogo
   document.getElementById('btn-exec').disabled = true;
   document.getElementById('btn-proximo').style.display = 'none';
   const codeArea = document.getElementById('code');
@@ -924,27 +911,27 @@ function mostrarTelaFinal() {
 
   let rating = "", emoji = "", color = "";
   if (totalStars === 12) { 
-    rating = "🏆 Desempenho PERFEITO! Você é um mestre!"; 
+    rating = "🏆 Desempenho PERFEITO! é isso ai meu nobre!"; 
     emoji = "🌟"; 
     color = "#facc15"; 
   }
   else if (totalStars >= 10) { 
-    rating = "🎖️ Excelente desempenho!"; 
+    rating = "🎖️ Excelente desempenho, poderia melhorar!"; 
     emoji = "🔥"; 
     color = "#22c55e"; 
   }
   else if (totalStars >= 7) { 
-    rating = "👍 Bom trabalho!"; 
+    rating = "👍 Melho do que nada, parabéns"; 
     emoji = "✅"; 
     color = "#eab308"; 
   }
   else if (totalStars >= 4) { 
-    rating = "🙂 Você completou o jogo!"; 
+    rating = "🙂 Tinha que ser um beta, mas completou o jogo!"; 
     emoji = "👏"; 
     color = "#3b82f6"; 
   }
   else { 
-    rating = "Continue treinando! Você consegue melhorar."; 
+    rating = "Continue treinando! alguma hora você melhorar."; 
     emoji = "💪"; 
     color = "#ef4444"; 
   }
@@ -1038,6 +1025,14 @@ function proximoNivel() {
 // ==================== LOAD LEVEL ==================== //
 function loadLevel(index, showStartButton = true, keepTimerRunning = false) {
   currentLevelIndex = index;
+
+  // === CORREÇÃO: define o tempo correto ANTES de mostrar a tela "Iniciar" ===
+  if (showStartButton) {
+    timeLeft = levelTimes[currentLevelIndex] || 60;
+    document.getElementById('time-left').textContent = timeLeft;
+    document.getElementById('timer').classList.remove('low');
+  }
+
   const level = levels[index];
 
   if (showStartButton) {
@@ -1051,7 +1046,6 @@ function loadLevel(index, showStartButton = true, keepTimerRunning = false) {
 
   chips = level.chips.map(chip => ({ ...chip, collected: false }));
 
-  // Restaura chips já coletados (persiste ao perder vida, reseta no game over)
   if (collectedChipsMemory.length > 0) {
     collectedChipsMemory.forEach(i => {
       if (chips[i]) chips[i].collected = true;
@@ -1083,7 +1077,8 @@ function loadLevel(index, showStartButton = true, keepTimerRunning = false) {
   execBtn.disabled = showStartButton;
 
   document.getElementById('btn-start').style.display = showStartButton ? 'flex' : 'none';
-  document.getElementById('btn-solucao').style.display = showStartButton ? 'none' : 'flex';
+  
+  document.getElementById('btn-solucao').style.display = (showStartButton || index === 3) ? 'none' : 'flex';
 
   if (showStartButton) {
     if (timerInterval) {
@@ -1098,7 +1093,7 @@ function loadLevel(index, showStartButton = true, keepTimerRunning = false) {
   updateLivesUI();
   applyLevelTheme();
   draw();
-  updateChipCounter(); // ← CONTADOR AO CARREGAR NÍVEL
+  updateChipCounter();
 }
 
 // ==================== CONTADOR DE CHIPS EM TEMPO REAL ==================== //
@@ -1164,11 +1159,10 @@ function loseLife(msg = "Você perdeu uma vida!") {
   if (lives <= 0) {
     alert("💀 GAME OVER\n\nVocê perdeu todas as 3 vidas!\n\nVoltando para o nível atual com vidas novas.");
     lives = 3;
-    collectedChipsMemory = []; // reset total ao perder as 3 vidas
+    collectedChipsMemory = [];
     updateLivesUI();
     loadLevel(currentLevelIndex, true);
   } else {
-    // Salva quais chips já foram coletados antes de reiniciar
     collectedChipsMemory = chips
       .map((c, i) => c.collected ? i : -1)
       .filter(i => i !== -1);
@@ -1191,7 +1185,7 @@ function startGame() {
 
   document.getElementById('btn-start').style.display = 'none';
   document.getElementById('btn-exec').disabled = false;
-  document.getElementById('btn-solucao').style.display = 'flex';
+  document.getElementById('btn-solucao').style.display = (currentLevelIndex === 3) ? 'none' : 'flex';
 
   document.getElementById('status').innerHTML = '🎮 Fase iniciada! Boa sorte!';
   startTimer();
@@ -1215,7 +1209,7 @@ function updateLivesUI() {
 function startTimer() {
   if (timerInterval) clearInterval(timerInterval);
   
-  timeLeft = levelTimes[currentLevelIndex];
+  timeLeft = levelTimes[currentLevelIndex];   // continua aqui (seguro)
   penaltyTime = 0;
   livesLostThisLevel = 0;
   usedSolution = false;
@@ -1248,13 +1242,12 @@ function handleTimeOut() {
   if (lives <= 0) {
     alert("💀 GAME OVER\n\nVocê perdeu todas as 3 vidas!\n\nVoltando para o nível atual com vidas novas.");
     lives = 3;
-    collectedChipsMemory = []; // reset total ao perder as 3 vidas
+    collectedChipsMemory = [];
     updateLivesUI();
     loadLevel(currentLevelIndex, true);
     return;
   }
 
-  // Salva chips coletados antes de mostrar o modal
   collectedChipsMemory = chips
     .map((c, i) => c.collected ? i : -1)
     .filter(i => i !== -1);
