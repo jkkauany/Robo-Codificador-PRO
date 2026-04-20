@@ -33,6 +33,123 @@ let levelStars = {};
 let usedSolution = false;
 let fromMenu = false;
 
+// ==================== SISTEMA DE PARTÍCULAS ==================== //
+let particles = [];
+let floatingTexts = [];
+let robotDeathAnim = null; // { startTime, px, py }
+
+function spawnChipCollectParticles(px, py) {
+  const colors = ['#10b981', '#34d399', '#6ee7b7', '#ffffff', '#ffd93d', '#00f5ff'];
+  for (let i = 0; i < 18; i++) {
+    const angle = (Math.PI * 2 * i) / 18 + (Math.random() - 0.5) * 0.4;
+    const speed = 2.5 + Math.random() * 3.5;
+    particles.push({
+      x: px, y: py,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 1.0,
+      decay: 0.028 + Math.random() * 0.018,
+      radius: 3 + Math.random() * 4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      type: 'chip'
+    });
+  }
+  floatingTexts.push({
+    x: px, y: py - 10,
+    vy: -1.5,
+    life: 1.0,
+    decay: 0.022,
+    text: '+1 💾',
+    color: '#34d399'
+  });
+}
+
+function spawnDeathParticles(px, py) {
+  const colors = ['#ef4444', '#f97316', '#fbbf24', '#ffffff', '#ff6b6b'];
+  for (let i = 0; i < 28; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 1.5 + Math.random() * 5;
+    particles.push({
+      x: px, y: py,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 2,
+      life: 1.0,
+      decay: 0.018 + Math.random() * 0.022,
+      radius: 2 + Math.random() * 6,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      type: 'death'
+    });
+  }
+  floatingTexts.push({
+    x: px, y: py - 15,
+    vy: -1.2,
+    life: 1.0,
+    decay: 0.018,
+    text: '💥 -1 ❤️',
+    color: '#ef4444'
+  });
+}
+
+function updateAndDrawParticles() {
+  // Particles
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.12; // gravity
+    p.life -= p.decay;
+    if (p.life <= 0) { particles.splice(i, 1); continue; }
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, p.life);
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.radius * p.life, 0, Math.PI * 2);
+    ctx.fillStyle = p.color;
+    if (p.type === 'death') {
+      ctx.shadowColor = p.color;
+      ctx.shadowBlur = 8;
+    }
+    ctx.fill();
+    ctx.restore();
+  }
+  // Floating texts
+  for (let i = floatingTexts.length - 1; i >= 0; i--) {
+    const ft = floatingTexts[i];
+    ft.y += ft.vy;
+    ft.life -= ft.decay;
+    if (ft.life <= 0) { floatingTexts.splice(i, 1); continue; }
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, ft.life);
+    ctx.font = `bold ${Math.round(18 + (1 - ft.life) * 4)}px system-ui`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = ft.color;
+    ctx.shadowColor = 'rgba(0,0,0,0.6)';
+    ctx.shadowBlur = 6;
+    ctx.fillText(ft.text, ft.x, ft.y);
+    ctx.restore();
+  }
+}
+
+function drawRobotDeath(px, py, progress) {
+  // progress: 0 → 1 (full animation)
+  ctx.save();
+  const shake = progress < 0.4 ? Math.sin(progress * Math.PI * 20) * (12 * (1 - progress / 0.4)) : 0;
+  const scale = progress < 0.5 ? 1 + progress * 0.3 : Math.max(0, 1.3 - (progress - 0.5) * 2.6);
+  ctx.globalAlpha = progress < 0.7 ? 1 : Math.max(0, 1 - (progress - 0.7) / 0.3);
+  ctx.translate(px + shake, py);
+  ctx.scale(scale, scale);
+  ctx.translate(-px, -py);
+  // Red tint overlay
+  ctx.globalCompositeOperation = 'source-over';
+  drawRobot(px, py);
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.fillStyle = `rgba(255, 80, 80, ${Math.min(0.8, progress * 2)})`;
+  ctx.beginPath();
+  ctx.arc(px, py - 5, 38, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
 // ====================== TEMAS POR NÍVEL ======================
 const levelThemes = [
   { canvasBg: '#e0f2ff', gridColor: '#7dd3fc', editorBg: '#0a1428', headerBg: '#1e2a4a', primaryBtn: '#00e6b8', successColor: '#22ffaa' },
@@ -452,7 +569,17 @@ function draw() {
   chips.forEach((_, i) => drawChip(chips[i].x, chips[i].y, i, time));
   timeBonusChips.forEach((_, i) => drawTimeBonus(timeBonusChips[i].x, timeBonusChips[i].y, i, time));
 
-  drawRobot(robotPixel.x, robotPixel.y);
+  // Death animation or normal robot
+  if (robotDeathAnim) {
+    const elapsed = (Date.now() - robotDeathAnim.startTime) / 1000;
+    const progress = Math.min(1, elapsed / 0.85);
+    drawRobotDeath(robotDeathAnim.px, robotDeathAnim.py, progress);
+    if (progress >= 1) robotDeathAnim = null;
+  } else {
+    drawRobot(robotPixel.x, robotPixel.y);
+  }
+
+  updateAndDrawParticles();
 }
 
 // ====================== APLICAR TEMA DO NÍVEL ======================
@@ -535,6 +662,7 @@ async function moveTo(newGridX, newGridY) {
   chips.forEach(chip => {
     if (!chip.collected && chip.x === robot.gridX && chip.y === robot.gridY) {
       chip.collected = true;
+      spawnChipCollectParticles(robotPixel.x, robotPixel.y);
     }
   });
 
@@ -1094,6 +1222,9 @@ function loadLevel(index, showStartButton = true, keepTimerRunning = false) {
   applyLevelTheme();
   draw();
   updateChipCounter();
+  particles = [];
+  floatingTexts = [];
+  robotDeathAnim = null;
 }
 
 // ==================== CONTADOR DE CHIPS EM TEMPO REAL ==================== //
@@ -1156,12 +1287,21 @@ function loseLife(msg = "Você perdeu uma vida!") {
   updateLivesUI();
   penaltyTime += 30;
 
+  // Trigger death animation + particles
+  robotDeathAnim = { startTime: Date.now(), px: robotPixel.x, py: robotPixel.y };
+  spawnDeathParticles(robotPixel.x, robotPixel.y);
+
   if (lives <= 0) {
-    alert("💀 GAME OVER\n\nVocê perdeu todas as 3 vidas!\n\nVoltando para o nível atual com vidas novas.");
-    lives = 3;
-    collectedChipsMemory = [];
-    updateLivesUI();
-    loadLevel(currentLevelIndex, true);
+    setTimeout(() => {
+      alert("💀 GAME OVER\n\nVocê perdeu todas as 3 vidas!\n\nVoltando para o nível atual com vidas novas.");
+      lives = 3;
+      collectedChipsMemory = [];
+      robotDeathAnim = null;
+      particles = [];
+      floatingTexts = [];
+      updateLivesUI();
+      loadLevel(currentLevelIndex, true);
+    }, 900);
   } else {
     collectedChipsMemory = chips
       .map((c, i) => c.collected ? i : -1)
@@ -1172,8 +1312,11 @@ function loseLife(msg = "Você perdeu uma vida!") {
     statusEl.innerHTML = `💥 ${msg} — Reiniciando automaticamente... (+30s de penalidade)`;
 
     setTimeout(() => {
+      robotDeathAnim = null;
+      particles = [];
+      floatingTexts = [];
       loadLevel(currentLevelIndex, false, true);
-    }, 1200);
+    }, 1100);
   }
 }
 
@@ -1314,10 +1457,13 @@ function voltarAoMenuDoJogo() {
 loadProgress();
 updateProgressBar();
 showMainMenu();
+gameLoop();
 
-setInterval(() => {
+// ==================== LOOP PRINCIPAL ==================== //
+function gameLoop() {
   if (!isRunning) draw();
-}, 80);
+  requestAnimationFrame(gameLoop);
+}
 
 document.getElementById('code').addEventListener('keydown', function(e) {
   if (e.ctrlKey && e.key === 'Enter') {
