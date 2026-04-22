@@ -1094,14 +1094,18 @@ function mostrarTelaFinal() {
           Nível 4 — ${'⭐'.repeat(levelStars[4] || 0)}
         </div>
 
-        <div style="display:flex; gap:12px; margin-top:25px;">
-          <button onclick="reiniciarTudo()" style="flex:1; background:#22c55e; color:#0f172a; border:none; padding:16px; font-size:18px; font-weight:bold; border-radius:12px; cursor:pointer;">
+        <div style="display:flex; gap:12px; margin-top:25px; flex-wrap:wrap;">
+          <button onclick="reiniciarTudo()" style="flex:1; min-width:140px; background:#22c55e; color:#0f172a; border:none; padding:16px; font-size:18px; font-weight:bold; border-radius:12px; cursor:pointer;">
             ▶️ Jogar Novamente
           </button>
-          <button onclick="voltarAoMenu()" style="flex:1; background:#64748b; color:white; border:none; padding:16px; font-size:18px; font-weight:bold; border-radius:12px; cursor:pointer;">
+          <button onclick="voltarAoMenu()" style="flex:1; min-width:140px; background:#64748b; color:white; border:none; padding:16px; font-size:18px; font-weight:bold; border-radius:12px; cursor:pointer;">
             🏠 Voltar ao Menu
           </button>
         </div>
+
+        <button onclick="mostrarCreditos()" style="width:100%; margin-top:14px; background:linear-gradient(135deg,#7c83ff,#a855f7); color:white; border:none; padding:14px; font-size:16px; font-weight:bold; border-radius:12px; cursor:pointer; letter-spacing:1px;">
+          🎓 Créditos do Projeto
+        </button>
       </div>
     </div>
   `;
@@ -1112,6 +1116,59 @@ function mostrarTelaFinal() {
   document.body.appendChild(finalScreen);
 }
 
+function mostrarCreditos() {
+        const existing = document.getElementById('modal-creditos');
+        if (existing) existing.remove();
+
+        const modal = document.createElement('div');
+        modal.id = 'modal-creditos';
+        modal.style.cssText = `position: fixed; inset: 0; background: rgba(10, 10, 30, 0.95); z-index: 20000; display: flex; align-items: center; justify-content: center; font-family: 'Roboto Mono', monospace; animation: fadeIn 0.35s ease forwards; padding: 20px;`;
+
+        modal.innerHTML = `
+            <div style="background: linear-gradient(160deg, #0f172a, #1e293b); border: 2px solid rgba(124,131,255,0.45); border-radius: 24px; padding: 40px 36px 32px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; text-align: center; color: white; box-shadow: 0 0 0 1px rgba(124,131,255,0.12), 0 30px 80px rgba(0,0,0,0.7);">
+                <div style="font-size:52px; margin-bottom:8px;">🎓</div>
+                <h2 style="font-size: 22px; font-weight: 800; color: #a5b4fc; letter-spacing: 2px; margin-bottom: 20px; text-transform: uppercase;">Créditos do Projeto</h2>
+                <p style="font-size: 13px; color: #94a3b8; line-height: 1.8; margin-bottom: 24px; text-align: left; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 16px 18px;">
+                    Projeto desenvolvido no âmbito do curso <strong style="color:#c4b5fd;">Técnico em Desenvolvimento de Sistemas</strong>, oferecido pelo <strong style="color:#c4b5fd;">Serviço Nacional de Aprendizagem Comercial (SENAC)</strong>, unidade de Serra Talhada.<br><br>
+                    Este trabalho consiste na criação de um jogo de lógica, elaborado como parte das atividades acadêmicas da turma de Desenvolvimento de Sistemas.
+                </p>
+                <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 18px 20px; margin-bottom: 18px; text-align: left;">
+                    <p style="font-size:12px; color:#7c83ff; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin-bottom:12px;">✏️ Autores</p>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px 16px;">
+                        <span style="font-size:14px; color:#e2e8f0;">👩‍💻 Kauany Juliana</span>
+                        <span style="font-size:14px; color:#e2e8f0;">👩‍💻 Jennifer Mirelly</span>
+                        <span style="font-size:14px; color:#e2e8f0;">👨‍💻 Luann Charles</span>
+                        <span style="font-size:14px; color:#e2e8f0;">👩‍💻 Edilene Camila</span>
+                        <span style="font-size:14px; color:#e2e8f0;">👨‍💻 Charles Samuel</span>
+                        <span style="font-size:14px; color:#e2e8f0;">👨‍💻 Luiz Gabriel</span>
+                        <span style="font-size:14px; color:#e2e8f0; grid-column:1/-1;">👩‍💻 Luana Christina</span>
+                    </div>
+                </div>
+                <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 14px 20px; margin-bottom: 18px; text-align: left; display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size:28px;">🧑‍🏫</span>
+                    <div>
+                        <p style="font-size:12px; color:#7c83ff; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin-bottom:4px;">Orientador</p>
+                        <p style="font-size:15px; color:#e2e8f0; font-weight:600;">Tobias Alves</p>
+                    </div>
+                </div>
+                <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 14px 20px; margin-bottom: 28px; display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size:28px;">📅</span>
+                    <div style="text-align:left;">
+                        <p style="font-size:12px; color:#7c83ff; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin-bottom:4px;">Ano</p>
+                        <p style="font-size:15px; color:#e2e8f0; font-weight:600;">2026</p>
+                    </div>
+                </div>
+                <button onclick="fecharCreditos()" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #7c83ff, #a855f7); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Roboto Mono', monospace; letter-spacing: 1px;">✕ Fechar</button>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+    }
+
+    function fecharCreditos() {
+        const modal = document.getElementById('modal-creditos');
+        if (modal) modal.remove();
+    }
 function voltarAoMenu() {
   if (document.getElementById("final-screen")) document.getElementById("final-screen").remove();
   showMainMenu();
@@ -1506,4 +1563,3 @@ document.getElementById('code').addEventListener('keydown', function(e) {
     executarCodigo();
   }
 });
-
